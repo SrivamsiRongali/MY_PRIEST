@@ -27,7 +27,7 @@ class Servicedetailsdata with ChangeNotifier {
     var token = sharedPreferences.getString("token");
     http.Response response = await http.get(
       Uri.parse(
-          "http://${AppConstants.ipaddress.ipaddress}/api/service-grocery/$serviceID/service-id"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/service-grocery/$serviceID/service-id"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",

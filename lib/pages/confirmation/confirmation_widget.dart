@@ -7,6 +7,7 @@ import 'package:my_priest/index.dart';
 import 'package:my_priest/shared.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import '../my_bookings/Mybookings.dart';
 import '/flutter_flow/flutter_flow_drop_down.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -84,7 +85,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
     sharedPreferences.setString("servicetime", "${date},${time}");
     var token = sharedPreferences.getString("token");
     http.Response response = await http.post(
-        Uri.parse("http://${AppConstants.ipaddress.ipaddress}/api/bookings"),
+        Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings"),
         headers: {
           "accept": "*/*",
           "Content-Type": "application/json",
@@ -98,7 +99,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
         loader = true;
       });
       Get.to(SuccessWidget(),
-          arguments: [date, _model.timetextController2.text]);
+          );
       print('Booking successfull');
 
       print(response.body);

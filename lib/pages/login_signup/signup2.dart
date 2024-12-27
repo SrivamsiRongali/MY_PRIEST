@@ -678,7 +678,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
  print("sign-up object = $data");
     http.Response response = await http.post(
         Uri.parse(
-            "http://${AppConstants.ipaddress.ipaddress}/api/auth/sign-up"),
+            "https://${AppConstants.ipaddress.ipaddress}/api/auth/sign-up"),
         headers: {"accept": "*/*", "Content-Type": "application/json"},
         body: data);
 

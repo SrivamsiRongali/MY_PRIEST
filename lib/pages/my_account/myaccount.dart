@@ -57,7 +57,7 @@ class _myaccountState extends State<myaccount> {
     print("$userid");
     http.Response response1;
     response1 = await http.get(
-      Uri.parse("http://${AppConstants.ipaddress.ipaddress}/api/users/$userid"),
+      Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/users/$userid"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",

@@ -532,7 +532,7 @@ class _signinState extends State<signin> {
     print("login api is hit");
     http.Response response = await http.post(
         Uri.parse(
-            "http://${AppConstants.ipaddress.ipaddress}/api/auth/sign-in"),
+            "https://${AppConstants.ipaddress.ipaddress}/api/auth/sign-in"),
         headers: {"accept": "*/*", "Content-Type": "application/json"},
         body: data);
 

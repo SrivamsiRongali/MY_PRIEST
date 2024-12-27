@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:my_priest/main.dart';
 
+import '../my_bookings/Mybookings.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -138,29 +139,29 @@ class _SuccessWidgetState extends State<SuccessWidget> {
                   Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
                     child: Text(
-                      'Your Pooja has been successfully booked',
+                      'Your request has been received. Please check your email to complete the payment and confirm your booking.',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Inter',
                             letterSpacing: 0.0,
                           ),
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 25.0),
-                    child: Text(
-                      'Event Date: ${data[0]}, ${data[1]}',
-                      style: FlutterFlowTheme.of(context).bodyMedium.override(
-                            fontFamily: 'Inter',
-                            letterSpacing: 0.0,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 25.0),
+                  //   child: Text(
+                  //     'Event Date: ${data[0]}, ${data[1]}',
+                  //     style: FlutterFlowTheme.of(context).bodyMedium.override(
+                  //           fontFamily: 'Inter',
+                  //           letterSpacing: 0.0,
+                  //           fontWeight: FontWeight.w600,
+                  //         ),
+                  //   ),
+                  // ),
                   FFButtonWidget(
                     onPressed: () {
-                     Get.offAll(NavBarPage());
+                     Get.offAll(mybookings());
                     },
-                    text: 'Back',
+                    text: 'Orders',
                     options: FFButtonOptions(
                       padding:
                           EdgeInsetsDirectional.fromSTEB(50.0, 25.0, 50.0, 25.0),

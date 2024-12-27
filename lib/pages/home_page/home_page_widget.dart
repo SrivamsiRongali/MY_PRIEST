@@ -66,7 +66,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     });
     response1 = await http.get(
       Uri.parse(
-          "http://${AppConstants.ipaddress.ipaddress}/api/bookings?pageIndex=0&pageSize=20&sortBy=id&sortOrder=DESC&userId=$userid"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/bookings?pageIndex=0&pageSize=20&sortBy=id&sortOrder=DESC&userId=$userid"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",
@@ -146,10 +146,10 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     var token = sharedPreferences.getString("token");
     var userid = sharedPreferences.getInt("userid");
     var name =  sharedPreferences.getString("name");
-    print("http://${AppConstants.ipaddress.ipaddress}/api/prokerala/panchang?ayanamsa=1&datetime=${DateFormat("y-MM-ddTHH%3Amm%3Ass").format(DateTime.now())}%2B00%3A00&language=en&latitude=$lat&longitude=$long");
+    print("https://${AppConstants.ipaddress.ipaddress}/api/prokerala/panchang?ayanamsa=1&datetime=${DateFormat("y-MM-ddTHH%3Amm%3Ass").format(DateTime.now())}%2B00%3A00&language=en&latitude=$lat&longitude=$long");
     response1 = await http.get(
       Uri.parse(
-          "http://${AppConstants.ipaddress.ipaddress}/api/prokerala/panchang?ayanamsa=1&datetime=${DateFormat("y-MM-ddTHH%3Amm%3Ass").format(DateTime.now())}%2B00%3A00&language=en&latitude=$lat&longitude=$long"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/prokerala/panchang?ayanamsa=1&datetime=${DateFormat("y-MM-ddTHH%3Amm%3Ass").format(DateTime.now())}%2B00%3A00&language=en&latitude=$lat&longitude=$long"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",
@@ -331,7 +331,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                               ),
                                             ),
                                           ),
-                                          Container(
+                                        panchangresponse['tithi']==null? Container() :  Container(
                                             width: screenwidth*0.6,
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
@@ -376,18 +376,26 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                                   ),
                                                         ),
                                                         TextSpan(
-                                                          text: panchangresponse['tithi'][0]['name'],
-                                                          style: GoogleFonts.getFont(
-                                                            'Inter',
-                                                          ),
+                                                          text: panchangresponse['tithi']==null? "" :panchangresponse['tithi'][0]['name'],
+                                                          style: FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  color: Colors.black,
+                                                                  fontFamily: 'Inter',
+                                                                  letterSpacing: 0.0,
+                                                                )
                                                         ),
                                                         TextSpan(
-                                                          text: 'till '+ DateFormat("hh:mm").format(DateTime.parse(panchangresponse['tithi'][0]['end'].toString())),
-                                                          style: GoogleFonts.getFont(
-                                                            'Inter',
-                                                            color: Colors.black,
-                                                            fontWeight: FontWeight.w500,
-                                                          ),
+                                                          text: ' till '+ DateFormat("hh:mm").format(DateTime.parse(panchangresponse['tithi']==null? "${DateTime.now()}" :panchangresponse['tithi'][0]['end'].toString())),
+                                                          style: FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  color: Colors.black,
+                                                                  fontFamily: 'Inter',
+                                                                  letterSpacing: 0.0,
+                                                                )
                                                         )
                                                       ],
                                                       style: FlutterFlowTheme.of(context)
@@ -423,7 +431,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                                   ),
                                                         ),
                                                         TextSpan(
-                                                            text: panchangresponse['nakshatra'][0]['name'],
+                                                            text: panchangresponse['nakshatra']==null? "" :panchangresponse['nakshatra'][0]['name'],
                                                             style: FlutterFlowTheme.of(
                                                                     context)
                                                                 .bodyMedium
@@ -431,14 +439,19 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                                   color: Colors.black,
                                                                   fontFamily: 'Inter',
                                                                   letterSpacing: 0.0,
-                                                                )),
+                                                                )
+                                                                
+                                                                ),
                                                         TextSpan(
-                                                          text: 'till '+ DateFormat("hh:mm").format(DateTime.parse(panchangresponse['nakshatra'][0]['end'].toString())),
-                                                          style: GoogleFonts.getFont(
-                                                            color: Colors.black,
-                                                            'Inter',
-                                                            fontWeight: FontWeight.w500,
-                                                          ),
+                                                          text: ' till '+ DateFormat("hh:mm").format(DateTime.parse(panchangresponse['nakshatra']==null? "${DateTime.now()}" :panchangresponse['nakshatra'][0]['end'].toString())),
+                                                          style: FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium
+                                                                .override(
+                                                                  color: Colors.black,
+                                                                  fontFamily: 'Inter',
+                                                                  letterSpacing: 0.0,
+                                                                )
                                                         )
                                                       ],
                                                       style: FlutterFlowTheme.of(context)

@@ -47,7 +47,7 @@ class _mybookingsState extends State<mybookings> {
     var userid = sharedPreferences.getInt("userid");
     response1 = await http.get(
       Uri.parse(
-          "http://${AppConstants.ipaddress.ipaddress}/api/bookings?pageIndex=0&pageSize=200&sortBy=id&sortOrder=DESC&userId=$userid"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/bookings?pageIndex=0&pageSize=200&sortBy=id&sortOrder=DESC&userId=$userid"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",

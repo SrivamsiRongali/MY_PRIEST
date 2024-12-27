@@ -58,7 +58,7 @@ class _PoojasWidgetState extends State<PoojasWidget> {
     http.Response response1;
     response1 = await http.get(
       Uri.parse(
-          "http://${AppConstants.ipaddress.ipaddress}/api/services?pageIndex=0&pageSize=200&sortBy=id&sortOrder=DESC&status=1"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/services?pageIndex=0&pageSize=200&sortBy=id&sortOrder=DESC&status=1"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",
