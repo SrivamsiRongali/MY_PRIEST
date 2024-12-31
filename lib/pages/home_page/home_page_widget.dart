@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:my_priest/pages/Temples.dart';
 import 'package:my_priest/pages/my_bookings/Mybookings.dart';
 import 'package:my_priest/shared.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -579,7 +580,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                 height: 10.0,
                                               ),
                                               Text(
-                                                'Book a Service',
+                                                'Book a Pooja',
                                                 style: FlutterFlowTheme.of(context)
                                                     .bodyMedium
                                                     .override(
@@ -607,17 +608,18 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                 Expanded(
                                   child: GestureDetector(
                                     onTap: () {
-                                       showDialog(
+                                      Get.to(TemplesWidget(),arguments: true);
+                    //                    showDialog(
                                  
-                              context: context,
-                              builder: (BuildContext context) {
-                                return popup(
-                                    onPressed: () {
-                    Navigator.pop(context);
-                                    },
-                                    content: "Coming soon", buttontext: 'Ok',);
-                              },
-                            );
+                    //           context: context,
+                    //           builder: (BuildContext context) {
+                    //             return popup(
+                    //                 onPressed: () {
+                    // Navigator.pop(context);
+                    //                 },
+                    //                 content: "Coming soon", buttontext: 'Ok',);
+                    //           },
+                    //         );
                                       },
                                     child: Container(
                                       decoration: BoxDecoration(

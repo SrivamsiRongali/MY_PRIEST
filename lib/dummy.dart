@@ -1,86 +1,52 @@
-// {
-//       "id": 92,
-//       "userId": 105,
-//       "user": {
-//         "id": 105,
-//         "roleId": 1,
-//         "roleName": "ADMIN",
-//         "userType": "PRIEST",
-//         "userName": "ML   Swany",
-//         "firstName": "ML",
-//         "middleName": "",
-//         "lastName": " Swany",
-//         "email": "mlswanyno@email.com",
-//         "profileImage": null,
-//         "gender": null,
-//         "primaryMobile": "7702342027",
-//         "alternativeMobile": "",
-//         "fatherName": null,
-//         "motherTongue": null,
-//         "dateOfBirth": null,
-//         "address": [
-//           {
-//             "id": 93,
-//             "addressType": "Current",
-//             "cityId": 1,
-//             "city": {
-//               "createdBy": 4,
-//               "updatedBy": 4,
-//               "createdAt": "2024-05-29T14:44:28.129+00:00",
-//               "updatedAt": "2024-05-29T14:44:28.129+00:00",
-//               "status": 1,
-//               "id": 1,
-//               "stateId": 1,
-//               "state": {
-//                 "createdBy": 4,
-//                 "updatedBy": 4,
-//                 "createdAt": "2024-05-29T14:44:02.188+00:00",
-//                 "updatedAt": "2024-05-29T14:44:02.188+00:00",
-//                 "status": 1,
-//                 "id": 1,
-//                 "countryId": 1,
-//                 "country": {
-//                   "createdBy": 4,
-//                   "updatedBy": 4,
-//                   "createdAt": "2024-05-29T14:43:17.491+00:00",
-//                   "updatedAt": "2024-05-29T14:43:17.491+00:00",
-//                   "status": 1,
-//                   "id": 1,
-//                   "name": "INDIA",
-//                   "countryCode": "IN",
-//                   "description": "india"
-//                 },
-//                 "name": "TELANGANA",
-//                 "description": "telangana"
-//               },
-//               "name": "Hyderabad",
-//               "description": "hyderabad"
-//             },
-//             "addressLine1": "Hyderabad ",
-//             "addressLine2": "Hyderabad ",
-//             "currentLatitude": null,
-//             "currentLongitude": null,
-//             "zip": null,
-//             "fax": null,
-//             "description": null,
-//             "status": null
-//           }
-//         ],
-//         "createdBy": 4,
-//         "createdByName": null,
-//         "updatedBy": 4,
-//         "updatedByName": null,
-//         "createdAt": "2024-05-31T11:52:33.183+00:00",
-//         "updatedAt": "2024-05-31T11:52:33.183+00:00",
-//         "status": 1
-//       },
-//       "designation": "PRIEST",
-//       "yearsOfExperience": null,
-//       "bio": null,
-//       "taxSSN": null,
-//       "description": "",
-//       "createdAt": "2024-05-31T12:19:19.069+00:00",
-//       "updatedAt": "2024-05-31T12:19:19.069+00:00",
-//       "status": 1,
-//       "priestServices": []
-//     },
+// import 'dart:convert';
+// import 'package:http/http.dart' as http;
+
+// Future<List<String>> fetchSearchPredictions(String query) async {
+//   // Ensure the query is not empty
+//   if (query.isEmpty) {
+//     return [];
+//   }
+
+//   // Define the endpoint with dynamic input
+//   final url = Uri.parse(
+//       'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
+//       'input=$query&'
+//       'key=YOUR_API_KEY&'
+//       'types=geocode&'
+//       'language=en-GB&'
+//       'components=country:AU');
+
+//   // Headers (optional for this API)
+//   final headers = {
+//     'accept': '/',
+//     'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+//     'user-agent': 'Flutter App',
+//   };
+
+//   try {
+//     // Send GET request
+//     final response = await http.get(url, headers: headers);
+
+//     // Check the response status
+//     if (response.statusCode == 200) {
+//       // Decode JSON response
+//       final jsonResponse = json.decode(response.body);
+
+//       // Extract predictions
+//       final predictions = jsonResponse['predictions'] as List;
+//       return predictions.map((p) => p['description'] as String).toList();
+//     } else {
+//       print('Failed to fetch data: ${response.statusCode}');
+//       return [];
+//     }
+//   } catch (e) {
+//     print('Error: $e');
+//     return [];
+//   }
+// }
+
+// void main() async {
+//   // Example usage: Replace 'Sydney' with user input
+//   final results = await fetchSearchPredictions('Sydney');
+//   print('Search Predictions: $results');
+// }

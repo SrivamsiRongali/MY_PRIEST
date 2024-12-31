@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:my_priest/index.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -189,7 +191,7 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                                 
                                               ),
                                               Text(
-                                                'Book a Service',
+                                                'Book a Pooja',
                                                 textAlign: TextAlign.center,
                                                 maxLines: 2,
                                                 style: FlutterFlowTheme.of(context)
@@ -215,8 +217,7 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                         5.0, 10.0, 5.0, 20.0),
                                     child: GestureDetector(
                                       onTap: () {
-                                        Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => PoojasWidget()));
+                                     
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -280,8 +281,7 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         5.0, 10.0, 5.0, 20.0),
                                     child: GestureDetector(onTap: () {
-                                        Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => PoojasWidget()));
+                                     
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -345,8 +345,7 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         5.0, 10.0, 5.0, 20.0),
                                     child: GestureDetector(onTap: () {
-                                        Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => PoojasWidget()));
+                                 
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(

@@ -49,7 +49,7 @@ class _PriestsWidgetState extends State<PriestsWidget> {
     var data = jsonEncode(service_id);
     response1 = await http.post(
       Uri.parse(
-          "http://${AppConstants.ipaddress.ipaddress}/api/priest-services/service-ids"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/priest-services/service-ids"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",
@@ -66,7 +66,7 @@ class _PriestsWidgetState extends State<PriestsWidget> {
       
       return mapresponse;
     } else {
-      
+      print(response1.statusCode);
       print('fetch unsuccessful');
       print(response1.body);
     }
@@ -208,8 +208,8 @@ class _PriestsWidgetState extends State<PriestsWidget> {
                                               ),
                                         ),
                                       ),
-                                      SizedBox(height: 5,),
-                                      Text(
+                                        priestList[index]['priest']['user']['address'].length==0? Container():SizedBox(height: 5,),
+                                     priestList[index]['priest']['user']['address'].length==0? Container(): Text(
                                         priestList[index]['priest']['user']['address'][0]['city']['name']+', '
                                         +priestList[index]['priest']['user']['address'][0]['city']['state']['name']+', '
                                         +priestList[index]['priest']['user']['address'][0]['city']['state']['country']['name'],

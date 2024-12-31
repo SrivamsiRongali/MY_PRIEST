@@ -6,13 +6,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
 import 'package:my_priest/pages/Account.dart';
-import 'package:my_priest/pages/Temple.dart';
+
 import 'package:my_priest/pages/splash_screen.dart';
 import 'package:provider/provider.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'flutter_flow/flutter_flow_util.dart';
 import 'flutter_flow/nav/nav.dart';
 import 'index.dart';
+import 'pages/Temples.dart';
 import 'pages/my_account/myaccount.dart';
 import 'pages/my_bookings/booking_details_model.dart';
 
@@ -53,6 +54,7 @@ class _MyAppState extends State<MyApp> {
         _themeMode = mode;
         FlutterFlowTheme.saveThemeMode(mode);
       });
+      
 
   @override
   Widget build(BuildContext context) {
@@ -105,107 +107,122 @@ class _NavBarPageState extends State<NavBarPage> {
 //     }
 //  );
   }
-
+   final List<int> _navigationHistory = [0]; 
+  Future<bool> _onWillPop() async {
+    if (_navigationHistory.length > 1) {
+      setState(() {
+        _navigationHistory.removeLast();
+        currentindex = _navigationHistory.last;
+      });
+      return false; // Prevent exiting the app
+    }
+    return true; // Exit the app
+  }
+ void _onTabTapped(int index) {
+    if (currentindex != index) {
+      setState(() {
+        _navigationHistory.add(index);
+        currentindex = index;
+      });
+    }
+  }
   int currentindex = 0;
   @override
   Widget build(BuildContext context) {
     final screens = [];
 
-    return Scaffold(
-      body: IndexedStack(
-        index: currentindex,
-        children: [
-          HomePageWidget(),
-          ServicesWidget(),
-          Templeswidget(),
-          myaccount(),
-        ],
-      ),
-      bottomNavigationBar:
-      
-      CustomLineIndicatorBottomNavbar(
-        selectedColor: Colors.white,
-        splashColor: Colors.white,
-        unSelectedColor: Colors.white,
-        backgroundColor:Color.fromARGB(255, 214, 98, 35),
-        currentIndex: currentindex,
-        unselectedIconSize: 20,
-        selectedIconSize: 20,
-        onTap: (index) {
-          setState(() {
-            currentindex = index;
-          });
-        },
-        enableLineIndicator: true,
-        lineIndicatorWidth: 3,
-        indicatorType: IndicatorType.bottom,
-        // gradient: LinearGradient(
-        //   colors: [Colors.pink, Colors.yellow],
-        // ),
-        customBottomBarItems: [
-          CustomBottomBarItems(
-            label: 'Home',
-            
-            assetsImagePath: "assets/images/Vector (1).png",
-            isAssetsImage: true,
-          ),
-          CustomBottomBarItems(
-            label: 'Services',
-            //icon: Icons.account_box_outlined,
-            assetsImagePath: "assets/images/Group 2 (1).png",
-            isAssetsImage: true,
-          ),
-          CustomBottomBarItems(
-            label: 'Temples',
-            
-            assetsImagePath: "assets/images/Group (3).png",
-            isAssetsImage: true,
-          ),
-          CustomBottomBarItems(
-            label: 'Account',
-            
-            assetsImagePath: "assets/images/Group 3.png",
-            isAssetsImage: true,
-          ),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: IndexedStack(
+          index: currentindex,
+          children: [
+            HomePageWidget(),
+            ServicesWidget(),
+            TemplesWidget(),
+            myaccount(),
+          ],
+        ),
+        bottomNavigationBar:
+        
+        CustomLineIndicatorBottomNavbar(
+          selectedColor: Colors.white,
+          splashColor: Colors.white,
+          unSelectedColor: Colors.white,
+          backgroundColor:Color.fromARGB(255, 214, 98, 35),
+          currentIndex: currentindex,
+          unselectedIconSize: 20,
+          selectedIconSize: 20,
+          onTap: _onTabTapped,
+          enableLineIndicator: true,
+          lineIndicatorWidth: 3,
+          indicatorType: IndicatorType.bottom,
           
-        ],
+          customBottomBarItems: [
+            CustomBottomBarItems(
+              label: 'Home',
+              
+              assetsImagePath: "assets/images/Vector (1).png",
+              isAssetsImage: true,
+            ),
+            CustomBottomBarItems(
+              label: 'Services',
+              //icon: Icons.account_box_outlined,
+              assetsImagePath: "assets/images/Group 2 (1).png",
+              isAssetsImage: true,
+            ),
+            CustomBottomBarItems(
+              label: 'Temples',
+              
+              assetsImagePath: "assets/images/Group (3).png",
+              isAssetsImage: true,
+            ),
+            CustomBottomBarItems(
+              label: 'Account',
+              
+              assetsImagePath: "assets/images/Group 3.png",
+              isAssetsImage: true,
+            ),
+            
+          ],
+        ),
+        //  BottomNavigationBar(
+        //   currentIndex: currentindex,
+        //   onTap: (i) async {
+        //     setState(() {
+        //       currentindex=i;
+        //     });
+        //   },
+        //   backgroundColor: Color.fromARGB(255, 214, 98, 35),
+        //   selectedItemColor: Colors.white,
+        //   unselectedItemColor: Colors.white,
+        //   // showSelectedLabels: false,
+        //   // showUnselectedLabels: false,
+        //   type: BottomNavigationBarType.fixed,
+        //   items: [
+        //     BottomNavigationBarItem(
+        //       icon: Image.asset("assets/images/Vector (1).png",height: 20,),
+        //       label: 'Home',
+             
+        //     ),
+        //     BottomNavigationBarItem(
+        //       icon: Image.asset("assets/images/Group 2 (1).png",height: 20,),
+        //       label: 'Services',
+              
+        //     ),
+        //     BottomNavigationBarItem(
+        //       icon: Image.asset("assets/images/Group (3).png",height: 20,),
+        //       label: 'Temples',
+              
+        //     ),
+        //     BottomNavigationBarItem(
+        //       icon: Image.asset("assets/images/Group 3.png",height: 20,),
+        //       label: 'Account',
+              
+        //     )
+        //   ],
+        // ),
       ),
-      //  BottomNavigationBar(
-      //   currentIndex: currentindex,
-      //   onTap: (i) async {
-      //     setState(() {
-      //       currentindex=i;
-      //     });
-      //   },
-      //   backgroundColor: Color.fromARGB(255, 214, 98, 35),
-      //   selectedItemColor: Colors.white,
-      //   unselectedItemColor: Colors.white,
-      //   // showSelectedLabels: false,
-      //   // showUnselectedLabels: false,
-      //   type: BottomNavigationBarType.fixed,
-      //   items: [
-      //     BottomNavigationBarItem(
-      //       icon: Image.asset("assets/images/Vector (1).png",height: 20,),
-      //       label: 'Home',
-           
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Image.asset("assets/images/Group 2 (1).png",height: 20,),
-      //       label: 'Services',
-            
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Image.asset("assets/images/Group (3).png",height: 20,),
-      //       label: 'Temples',
-            
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Image.asset("assets/images/Group 3.png",height: 20,),
-      //       label: 'Account',
-            
-      //     )
-      //   ],
-      // ),
     );
   }
 }

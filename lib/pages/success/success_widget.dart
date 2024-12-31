@@ -137,13 +137,14 @@ class _SuccessWidgetState extends State<SuccessWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
+                    padding: EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 20.0),
                     child: Text(
                       'Your request has been received. Please check your email to complete the payment and confirm your booking.',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Inter',
                             letterSpacing: 0.0,
                           ),
+                          textAlign: TextAlign.center,
                     ),
                   ),
                   // Padding(

@@ -26,7 +26,8 @@ class ConfirmationWidget extends StatefulWidget {
   @override
   State<ConfirmationWidget> createState() => _ConfirmationWidgetState();
 }
-
+late ValueNotifier<String> selectedaddressdata;
+late ValueNotifier<List> allcitylist;
 class _ConfirmationWidgetState extends State<ConfirmationWidget> {
   late ConfirmationModel _model;
 
@@ -35,6 +36,8 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
   @override
   void initState() {
     super.initState();
+       selectedaddressdata = ValueNotifier<String>("");
+    allcitylist = ValueNotifier<List>([]);
     _model = createModel(context, () => ConfirmationModel());
 
     _model.datetextController1 ??= TextEditingController();
@@ -60,7 +63,295 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
     print("passed data ${data[0]}");
     print("passed data ${data[1]}");
   }
+Future<List<String>> fetchSearchPredictions(String query) async {
+  // Ensure the query is not empty
+  if (query.isEmpty) {
+    return [];
+  }
+  print('''google url 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
+      'input=$query&'
+      'key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE&'
+      'types=geocode&'
+      'language=en-GB&'
+      'components=country:IN''');
+  // Define the endpoint with dynamic input
+  final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
+      'input=$query&'
+      'key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE&'
+      'types=geocode&'
+      'language=en-GB&'
+      'components=country:IN');
 
+  // Headers (optional for this API)
+  final headers = {
+    'accept': '/',
+    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+    'user-agent': 'Flutter App',
+  };
+
+  try {
+    // Send GET request
+    final response = await http.get(url, headers: headers);
+
+    // Check the response status
+    if (response.statusCode == 200) {
+      // Decode JSON response
+      final jsonResponse = json.decode(response.body);
+
+      // Extract predictions
+      final predictions = jsonResponse['predictions'] as List;
+      setState(() {
+        allcitylist.value=jsonResponse['predictions'] ;
+      });
+      print('successful fetch data: ${response.statusCode} ${jsonResponse['predictions'][0]['structured_formatting']}');
+      return predictions.map((p) => p['description'] as String).toList();
+    } else {
+      print('Failed to fetch data: ${response.statusCode} ${response.body}');
+      return [];
+    }
+  } catch (e) {
+    print('Error: $e');
+    return [];
+  }
+}
+ citybottomsheet(TextEditingController city) async {
+    return showModalBottomSheet(
+      isDismissible: true,
+      isScrollControlled: true,
+      context: context,
+      builder: (context) {
+
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 50),
+            child: StatefulBuilder(builder: (context, setState) {
+              return Container(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding:
+                          EdgeInsetsDirectional.fromSTEB(16.0, 16.0, 16.0, 0.0),
+                      child: TextFormField(
+                        controller: city,
+                        obscureText: false,
+                        onChanged: (value) {
+                          if (value.length >= 3) {
+                            fetchSearchPredictions(value);
+                            setState(() {});
+                          } else {
+                            fetchSearchPredictions("");
+                            setState(() {});
+                          }
+                        },
+                        onTapOutside: (event) {
+                          if (city.text.length >= 3) {
+                            fetchSearchPredictions(city.text);
+                            setState(() {});
+                          } else {
+                            fetchSearchPredictions("");
+                            setState(() {});
+                          }
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Search yours address...',
+                          labelStyle: FlutterFlowTheme.of(context).labelMedium,
+                          hintText: "Start typing to fetch your address..",
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context)
+                                  .primaryBackground,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).primary,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          focusedErrorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: FlutterFlowTheme.of(context).error,
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          filled: true,
+                          fillColor:
+                              FlutterFlowTheme.of(context).primaryBackground,
+                          prefixIcon: Icon(
+                            Icons.search_outlined,
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                          ),
+                        ),
+                        style: FlutterFlowTheme.of(context).bodyMedium,
+                        maxLines: null,
+                        // validator: cityctrl.asValidator(context),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding:
+                            EdgeInsetsDirectional.fromSTEB(8.0, 8.0, 8.0, 0.0),
+                        child: SingleChildScrollView(
+                          child: ValueListenableBuilder(
+                            builder:
+                                (BuildContext context, value, Widget? child) =>
+                                    Container(
+                              child: allcitylist.value == null
+                                  ? Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      child: Center(
+                                          child: Text(
+                                        'No City found',
+                                        style: FlutterFlowTheme.of(context)
+                                            .headlineSmall
+                                            .override(
+                                              fontFamily: 'Outfit',
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                      )))
+                                  : allcitylist.value!.length == 0
+                                      ? Container(
+                                          width: double.infinity,
+                                          height: 200,
+                                          child: Center(
+                                              child: Text(
+                                            'No City found',
+                                            style: FlutterFlowTheme.of(context)
+                                                .headlineSmall
+                                                .override(
+                                                  fontFamily: 'Outfit',
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .primaryText,
+                                                  fontSize: 20.0,
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                          )))
+                                      : ListView.builder(
+                                          // controller: controller,
+                                          physics: BouncingScrollPhysics(),
+                                          itemCount: allcitylist.value == null
+                                              ? 0
+                                              : allcitylist.value!.length,
+                                          padding: EdgeInsets.zero,
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.vertical,
+                                          itemBuilder: (BuildContext context,
+                                              int index) {
+                                            return Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(0.0, 0.0, 0.0, 1.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: FlutterFlowTheme.of(
+                                                          context)
+                                                      .secondaryBackground,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      blurRadius: 0.0,
+                                                      color:
+                                                          FlutterFlowTheme.of(
+                                                                  context)
+                                                              .alternate,
+                                                      offset: Offset(0.0, 1.0),
+                                                    )
+                                                  ],
+                                                ),
+                                                child: Padding(
+                                                  padding: EdgeInsetsDirectional
+                                                      .fromSTEB(15.0, 15.0,
+                                                          15.0, 15.0),
+                                                  child: GestureDetector(
+                                                    onTap: () async {
+                                                      // _model.address2textController4.text=value[index]['structured_formatting']['secondary_text'];
+                                                      
+                                                      _model.address1textController3.text=value[index]['structured_formatting']['main_text'];
+                                                      List addressdatafromgoogle=[];
+                                                      addressdatafromgoogle.addAll(value[index]['structured_formatting']['secondary_text'].split(',')
+                                                      );
+                                                      _model.statetextController6.text=addressdatafromgoogle[addressdatafromgoogle.length-2];
+                                                      _model.citytextController5.text=addressdatafromgoogle[addressdatafromgoogle.length-3];
+                                                      _model.dropDownValue=addressdatafromgoogle.last;
+                                                      addressdatafromgoogle.removeRange(addressdatafromgoogle.length - 3, addressdatafromgoogle.length);
+                                                      _model.address2textController4.text=addressdatafromgoogle.join(',');
+                                                    
+                                                      Get.back();
+                                                      this.setState(() {});
+                                                     
+                                                    },
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      children: [
+                                                        Expanded(
+                                                          child: Column(
+                                                            mainAxisSize:
+                                                                MainAxisSize
+                                                                    .max,
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Padding(
+                                                                padding:
+                                                                    EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            12.0,
+                                                                            0.0,
+                                                                            0.0,
+                                                                            0.0),
+                                                                child: Text(
+                                                                  '${value[index]['description']}',
+                                                                  style: FlutterFlowTheme.of(
+                                                                          context)
+                                                                      .bodyLarge,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }),
+                            ),
+                            valueListenable: allcitylist,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
   bool loader = true;
   String selectedTime = "00:00";
@@ -73,12 +364,24 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
     print(
         " date = ${date}T${time}:00.00Z,priest=$priestid,serviceid=$serviceid");
     var data = json.encode({
+      "address": {
+    "addressLine1": _model.address1textController3.text,
+    "addressLine2": _model.address2textController4.text,
+    "addressType": "Current",
+    "cityId": 1,
+    "currentLatitude": 0,
+    "currentLongitude": 0,
+    "description": notes,
+    "fax": "string",
+    "zip": "string"
+  },
+      "bookingStatus": "Initiated",
       "bookingDate": "${date}T${time}:00",
-      "description": notes,
+      "description": _model.textController7.text,
       "priestId": priestid,
       "servicesId": serviceid,
     });
-
+  print("booking object $data");
     Map mapresponse;
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
@@ -125,7 +428,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
       print(" data =$data");
       print('fail');
       Get.defaultDialog(
-        title: "Unable book",
+        title: "Unable book ${response.body}",
         titleStyle: TextStyle(color: Colors.red),
         content: Padding(
           padding: const EdgeInsets.only(left: 10, right: 10),
@@ -736,9 +1039,17 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
                           width: double.infinity,
                           child: TextFormField(
                             controller: _model.address1textController3,
-                            focusNode: _model.textFieldFocusNode3,
+                            focusNode: _model.textFieldFocusNode3,keyboardType: TextInputType.none,
                             autofocus: false,
                             obscureText: false,
+                            onTap: () {
+                              citybottomsheet(_model.address1textController3!);
+                            },
+                            // onChanged: (value) {
+                            //   if(value.length>=3){
+                            //     fetchSearchPredictions(value);
+                            //   }
+                            // },
                             decoration: InputDecoration(
                               isDense: true,
                               labelText: 'Address Line 1',
@@ -905,7 +1216,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
                                   letterSpacing: 0.0,
                                   fontWeight: FontWeight.w300,
                                 ),
-                        hintText: 'Select Country',
+                        hintText: _model.dropDownValue==null?'Select Country':_model.dropDownValue,
                         icon: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: FlutterFlowTheme.of(context).secondaryText,
@@ -1013,9 +1324,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
                                           _model.address2textController4.text +
                                           _model.citytextController5.text +
                                           _model.statetextController6.text +
-                                          _model.dropDownValue.toString() +
-                                          '__' +
-                                          _model.textController7.text);
+                                          _model.dropDownValue.toString());
                                 }
                               }
                             }

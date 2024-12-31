@@ -15,6 +15,7 @@ import 'package:http/http.dart' as http;
 import '../../flutter_flow/flutter_flow_icon_button.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../shared.dart';
+import '../Account.dart';
 import '../login_signup/signin.dart';
 import '../my_bookings/Mybookings.dart';
 
@@ -225,7 +226,7 @@ class _myaccountState extends State<myaccount> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Get.to(()=>myprofile());
+                      Get.to(()=>Accountwidget());
                     },
                     child: Container(
                       height: screenheight * 0.075,
@@ -234,9 +235,9 @@ class _myaccountState extends State<myaccount> {
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
                           TextButton(onPressed: (){
-                            // Get.to(()=>myprofile());
+                            Get.to(()=>Accountwidget());
                             }, child: Text(
-                            'Edit Profile',
+                            'My Profile',
                             style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,color: Colors.black),
@@ -244,7 +245,7 @@ class _myaccountState extends State<myaccount> {
                           
                           IconButton(
                               onPressed: () {
-                                // Get.to(()=>myprofile());
+                                Get.to(()=>Accountwidget());
                                 },
                               icon: Icon(
                                 Icons.arrow_forward_ios,
@@ -255,93 +256,7 @@ class _myaccountState extends State<myaccount> {
                       ),
                     ),
                   ),
-                  Divider(
-                    thickness: 1,
-                    height: 0,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      // Get.to(()=>settings(),arguments: name);
-                    },
-                    child: Container(
-                      height: screenheight * 0.075,
-                      width: screenwidth,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // ignore: prefer_const_literals_to_create_immutables
-                        children: [
-                          TextButton(
-                            onPressed: () {
-                              // Get.to(()=>settings(),arguments: name);
-                            },
-                            child: Text(
-                              'Settings',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,color: Colors.black),
-                            ),
-                          ),
-                          IconButton(
-                              onPressed: () {
-                                // Get.to(()=>settings(),arguments: name);
-                                },
-                              icon: Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.black,
-                                size: 20,
-                              ))
-                        ],
-                      ),
-                    ),
-                  ),
-                  Divider(
-                    thickness: 1,
-                    height: 0,
-                  ),
-                  GestureDetector(
-                    onTap: () async {
-      //                 await Share.share('''Dear Patron,
-                                
-      // I found out an app which facilitates indian priest services.
-      // Download app from www.ipsapp.com''');
-                    },
-                    child: Container(
-                      height: screenheight * 0.075,
-                      width: screenwidth,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        // ignore: prefer_const_literals_to_create_immutables
-                        children: [
-                          TextButton(
-                            onPressed: ()async {
-      //                          await Share.share('''Dear Patron,
-                                
-      // I found out an app which facilitates indian priest services.
-      // Download app from www.ipsapp.com''');
-                            },
-                            child: Text(
-                              'Share',
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,color: Colors.black),
-                            ),
-                          ),
-                          IconButton(
-                              onPressed: ()async { 
-      //                           await Share.share('''Dear Patron,
-                                
-      // I found out an app which facilitates indian priest services.
-      // Download app from www.ipsapp.com''');
-      },
-                              icon: Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.black,
-                                size: 20,
-                              ))
-                        ],
-                      ),
-                    ),
-                  ),
+                
                   Divider(
                     thickness: 1,
                     height: 0,

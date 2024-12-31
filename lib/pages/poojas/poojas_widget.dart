@@ -195,7 +195,7 @@ class _PoojasWidgetState extends State<PoojasWidget> {
             height: remainingHeight,
             child: SingleChildScrollView(
               child: ListView.builder(
-                padding: EdgeInsetsDirectional.fromSTEB(10.0, 10.0, 10.0, 10.0),
+                padding: EdgeInsetsDirectional.fromSTEB(10.0, 10.0, 10.0, 60.0),
                 shrinkWrap: true,
                 physics: BouncingScrollPhysics(),
                 itemCount: ServicesList.length,

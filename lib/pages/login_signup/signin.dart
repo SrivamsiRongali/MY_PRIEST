@@ -429,65 +429,65 @@ class _signinState extends State<signin> {
                             //   height: screenheight * 0.012,
                             // ),
 
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(top: 10, bottom: 20),
-                              child: Image.asset(
-                                "assets/images/Group 4.png",
-                                fit: BoxFit.fitWidth,
-                              ),
-                            ),
+                            // Padding(
+                            //   padding:
+                            //       const EdgeInsets.only(top: 10, bottom: 20),
+                            //   child: Image.asset(
+                            //     "assets/images/Group 4.png",
+                            //     fit: BoxFit.fitWidth,
+                            //   ),
+                            // ),
                             
-                            MaterialButton(
-                              onPressed: () async {
-                                Get.defaultDialog(
-                                    title: "Coming Soon",
-                                    titlePadding: EdgeInsets.only(top: 10),
-                                    content: Text(""),
-                                    actions: [
-                                      MaterialButton(
-                                        color: Color.fromARGB(
-                                            255, 214, 98, 35),
-                                        onPressed: () {
-                                          Get.back();
-                                        },
-                                        child: Text(
-                                          'OK',
-                                          style: TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                      )
-                                    ]);
-                                //googleLogin();
-                              },
-                              color: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5)),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 19),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                  // ignore: prefer_const_literals_to_create_immutables
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                            height: screenheight * 0.022,
-                                            // width: screenwidth * 0.08,
-                                            child: SvgPicture.asset(
-                                              'images/Group.svg',
-                                              fit: BoxFit.contain,
-                                            )),
-                                        Text("Login with Google",
-                                            style: TextStyle(fontSize: 14)),
-                                      ],
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
+                            // MaterialButton(
+                            //   onPressed: () async {
+                            //     Get.defaultDialog(
+                            //         title: "Coming Soon",
+                            //         titlePadding: EdgeInsets.only(top: 10),
+                            //         content: Text(""),
+                            //         actions: [
+                            //           MaterialButton(
+                            //             color: Color.fromARGB(
+                            //                 255, 214, 98, 35),
+                            //             onPressed: () {
+                            //               Get.back();
+                            //             },
+                            //             child: Text(
+                            //               'OK',
+                            //               style: TextStyle(
+                            //                   color: Colors.white),
+                            //             ),
+                            //           )
+                            //         ]);
+                            //     //googleLogin();
+                            //   },
+                            //   color: Colors.white,
+                            //   elevation: 0,
+                            //   shape: RoundedRectangleBorder(
+                            //       borderRadius: BorderRadius.circular(5)),
+                            //   child: Padding(
+                            //     padding: EdgeInsets.symmetric(vertical: 19),
+                            //     child: Row(
+                            //       mainAxisAlignment:
+                            //           MainAxisAlignment.center,
+                            //       // ignore: prefer_const_literals_to_create_immutables
+                            //       children: [
+                            //         Row(
+                            //           children: [
+                            //             Container(
+                            //                 height: screenheight * 0.022,
+                            //                 // width: screenwidth * 0.08,
+                            //                 child: SvgPicture.asset(
+                            //                   'images/Group.svg',
+                            //                   fit: BoxFit.contain,
+                            //                 )),
+                            //             Text("Login with Google",
+                            //                 style: TextStyle(fontSize: 14)),
+                            //           ],
+                            //         )
+                            //       ],
+                            //     ),
+                            //   ),
+                            // ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
