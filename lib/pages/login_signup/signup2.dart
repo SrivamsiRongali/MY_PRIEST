@@ -740,12 +740,12 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
       print(" data =$data");
       print('fail');
       Get.defaultDialog(
-        title: " ${response.body}",
+        title: " ",
         titleStyle: TextStyle(color: Colors.red),
         content: Padding(
           padding: const EdgeInsets.only(left: 10, right: 10),
           child: Text(
-            "",
+            "Unable to create account please try again later",
           ),
         ),
         textConfirm: "ok",

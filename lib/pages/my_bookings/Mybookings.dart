@@ -61,13 +61,13 @@ class _mybookingsState extends State<mybookings> {
         print('successful');
         mapresponse = json.decode(response1.body);
         listresponse = mapresponse['data'];
-        for (int n = 0; n < listresponse.length; n++) {
-          for (int i = 0;
-              i < listresponse[n]['bookingServiceResponse'].length;
-              i++) {
-            // expandlist.add(false);
-          }
-        }
+        // for (int n = 0; n < listresponse.length; n++) {
+        //   for (int i = 0;
+        //       i < listresponse[n]['bookingServiceResponse'].length;
+        //       i++) {
+        //     // expandlist.add(false);
+        //   }
+        // }
       });
       return listresponse;
     } else {
@@ -471,6 +471,54 @@ class _mybookingsState extends State<mybookings> {
                                   SizedBox(
                                     height: 25,
                                   ),
+
+                                  Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              // ignore: prefer_const_literals_to_create_immutables
+                                              children: [
+                                               
+                                                SizedBox(
+                                                  width: 10,
+                                                ),
+                                                Container(
+                                                  
+                                                  child: Text(
+                                                   "Booking Status",
+                                                    textAlign: TextAlign.left,
+                                                    style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          listresponse[index]['bookingStatus']=="Booked"?SvgPicture.asset("images/Group (1).svg",height: 80,):  Container(
+                                              height: 25,
+                                              width: 70,
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          100),
+                                                  color:listresponse[index]['bookingStatus']=="Booked"? Color.fromARGB(39, 2, 255, 57): Color.fromARGB(39, 119, 119, 119)),
+                                              child: Center(
+                                                  child: Text(
+                                                " ${listresponse[index]['bookingStatus']}",
+                                                style: TextStyle(
+                                                    color:listresponse[index]['bookingStatus']=="Booked"? Color.fromARGB(255, 35, 214, 104):Color.fromARGB(255, 147, 147, 147),
+                                                    fontSize: 14,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              )),
+                                            )
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          height: 15,
+                                        ),
                                   ListView.builder(
                                     itemCount: listresponse[index]
                                             ['bookingServiceResponse']

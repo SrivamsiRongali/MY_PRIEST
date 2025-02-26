@@ -569,7 +569,7 @@ Future<List<String>> fetchSearchPredictions(String query) async {
                                       SizedBox(
                                         height: 5,
                                       ),
-                                      Text(
+                                     data[1]['priest']['user']['address'].length==0?Container(): Text(
                                         data[1]['priest']['user']['address'][0]
                                                 ['city']['name'] +
                                             ', ' +

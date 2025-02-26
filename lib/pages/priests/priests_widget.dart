@@ -447,7 +447,7 @@ class _PriestsWidgetState extends State<PriestsWidget> {
                                           ),
                                         ),
                                         SizedBox(height: 5,),
-                                        Container(
+                                       priestList[index]['priest']['user']['address'].length==0?Container():  Container(
                                           width: screensize.width*0.4,
                                           child: Text(
                                             priestList[index]['priest']['user']['address'][0]['city']['name']+', '
