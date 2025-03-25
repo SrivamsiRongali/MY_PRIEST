@@ -1,13 +1,7 @@
-import '/flutter_flow/flutter_flow_drop_down.dart';
-import '/flutter_flow/flutter_flow_icon_button.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import '/flutter_flow/form_field_controller.dart';
 import 'confirmation_widget.dart' show ConfirmationWidget;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 
 class ConfirmationModel extends FlutterFlowModel<ConfirmationWidget> {
   ///  State fields for stateful widgets in this page.
@@ -44,6 +38,11 @@ class ConfirmationModel extends FlutterFlowModel<ConfirmationWidget> {
   TextEditingController? textController7;
   String? Function(BuildContext, String?)? textController7Validator;
 
+
+   FocusNode? textFieldFocusNode8;
+  TextEditingController? flatnoandaptnameController8;
+  String? Function(BuildContext, String?)? textController8Validator;
+
   @override
   void initState(BuildContext context) {}
 
@@ -69,5 +68,8 @@ class ConfirmationModel extends FlutterFlowModel<ConfirmationWidget> {
 
     textFieldFocusNode7?.dispose();
     textController7?.dispose();
+
+    textFieldFocusNode8?.dispose();
+    flatnoandaptnameController8?.dispose();
   }
 }

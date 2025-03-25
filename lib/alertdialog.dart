@@ -6,7 +6,7 @@ import 'flutter_flow/flutter_flow_theme.dart';
 
 
 class popup extends StatelessWidget {
- popup({required this.onPressed,required this.content,required this.buttontext});
+ popup({super.key, required this.onPressed,required this.content,required this.buttontext});
   VoidCallback onPressed;
   String content;
   String buttontext;
@@ -16,7 +16,7 @@ class popup extends StatelessWidget {
                 backgroundColor:Colors.grey[200],
                 surfaceTintColor: Colors.grey[200],
                 actions: [Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             0.0, 0.0, 0.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -25,8 +25,8 @@ class popup extends StatelessWidget {
                             TextButton(
                               onPressed:onPressed,
                               child: Text(
-                                '$buttontext',
-                                style: TextStyle(
+                                buttontext,
+                                style: const TextStyle(
                                   fontFamily: 'Poppins',
                                   color: Colors.black,
                                   fontSize: 15.0,
@@ -47,12 +47,12 @@ class popup extends StatelessWidget {
                     shape: BoxShape.rectangle,
                   ),
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
                         15.0, 40.0, 15.0, 0.0),
                     child: Text(
-"$content",
+content,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black,
                         fontFamily: 'Poppins',
                         fontSize: 15.0,
@@ -64,7 +64,7 @@ class popup extends StatelessWidget {
   }
 }
 class popupwithyesandnobuttons extends StatelessWidget {
-   popupwithyesandnobuttons({required this.onPressedforyes,required this.onPressedforno,required this.content});
+   popupwithyesandnobuttons({super.key, required this.onPressedforyes,required this.onPressedforno,required this.content});
 VoidCallback onPressedforyes;
 VoidCallback onPressedforno;
 String content;
@@ -74,7 +74,7 @@ String content;
                 backgroundColor:Colors.grey[200],
                 surfaceTintColor: Colors.grey[200],
                 actions: [Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             0.0, 0.0, 0.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -116,12 +116,12 @@ String content;
                     shape: BoxShape.rectangle,
                   ),
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
                         15.0, 40.0, 15.0, 0.0),
                     child: Text(
-                      '$content',
+                      content,
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 15.0,
                       ),
@@ -133,7 +133,7 @@ String content;
 }
 
 class popupwithDiscardandsavebuttons extends StatelessWidget {
-   popupwithDiscardandsavebuttons({required this.onPressedfordiscard,required this.onPressedforsave,required this.content});
+   popupwithDiscardandsavebuttons({super.key, required this.onPressedfordiscard,required this.onPressedforsave,required this.content});
 VoidCallback onPressedfordiscard;
 VoidCallback onPressedforsave;
 Widget content;
@@ -143,7 +143,7 @@ Widget content;
                 backgroundColor:Colors.grey[200],
                 surfaceTintColor: Colors.grey[200],
                 actions: [Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
                             0.0, 0.0, 0.0, 0.0),
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
@@ -179,7 +179,7 @@ Widget content;
                 content: Container(
                   
                   child: Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
                         0.0, 40.0, 0.0, 0.0),
                     child: content
                   ),

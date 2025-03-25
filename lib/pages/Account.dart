@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:my_priest/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -44,6 +45,7 @@ class _AccountwidgetState extends State<Accountwidget> {
   }
 
   TextEditingController fname = TextEditingController();
+  // TextEditingController mname = TextEditingController();
   TextEditingController lname = TextEditingController();
   TextEditingController fathername = TextEditingController();
   TextEditingController dobname = TextEditingController();
@@ -56,8 +58,11 @@ class _AccountwidgetState extends State<Accountwidget> {
   String? dropDownValue;
   FormFieldController<String>? dropDownValueController;
 
-  Map? mapresponse = null;
+  Map? mapresponse;
   Future _apicall() async {
+     setState(() {
+        loader=true;
+      });
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
     var token = sharedPreferences.getString("token");
@@ -73,11 +78,18 @@ class _AccountwidgetState extends State<Accountwidget> {
       },
     );
     if (response1.statusCode == 200) {
-      print('successful');
-
+       mapresponse = json.decode(response1.body);
+      print('successful ${ mapresponse!['firstName'].toString()+' '+ mapresponse!['lastName'].toString()} ');
+  
+      final SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+          sharedPreferences.setString("name", mapresponse!['firstName']+' '+ mapresponse!['lastName']);
       setState(() {
-        mapresponse = json.decode(response1.body);
+        loader=false;
+       
+        
         fname.text = mapresponse!['firstName'];
+        // mname.text=mapresponse!['middleName']==null?"":mapresponse!['middleName'];
         lname.text = mapresponse!['lastName'];
         fathername.text = mapresponse!['fatherName'] == null
             ? ""
@@ -89,9 +101,7 @@ class _AccountwidgetState extends State<Accountwidget> {
             : mapresponse!['motherTongue']== "string"
             ? ""
             : mapresponse!['motherTongue'];
-        mobilenumber.text = mapresponse!['primaryMobile'] == null
-            ? ""
-            : mapresponse!['primaryMobile'];
+        mobilenumber.text = mapresponse!['primaryMobile'] ?? "";
         address1.text = mapresponse!['address'] == []
             ? ""
             : mapresponse!['address'][0]['addressLine1'] == null
@@ -105,7 +115,7 @@ class _AccountwidgetState extends State<Accountwidget> {
                 ? ""
                 : mapresponse!['address'][0]['addressLine2']== "string"
             ? ""
-            : mapresponse!['address'][0]['addressLine1'];
+            : mapresponse!['address'][0]['addressLine2'];
                 List addressdata=[];
                 if(mapresponse!['address'].length > 0 ){
                   if(mapresponse!['address'][0]['description'] != null){
@@ -114,25 +124,37 @@ addressdata.addAll(mapresponse!['address'][0]['description'].toString().split('-
                   
                 }
                 print(mapresponse!['address'][0]['description']);
-        city.text = addressdata.length == 0
+        city.text = addressdata.isEmpty
+            ? ""
+            :  addressdata.length==1
             ? ""
             : addressdata[0];
-        state.text =addressdata.length == 0
+        state.text =addressdata.isEmpty
+            ? ""
+            : addressdata.length==1
             ? ""
             : addressdata[1];
-        dropDownValue = addressdata.length == 0
-            ? null
+        dropDownValue = addressdata.isEmpty
+            ? "India"
+            : addressdata.length==1
+            ? "India"
             : addressdata[2];
       });
 
       return mapresponse;
     } else {
+       setState(() {
+        loader=false;
+      });
       print('fetch unsuccessful');
       print(response1.body);
     }
   }
 
     Future _updateapicall() async {
+      setState(() {
+        loader=true;
+      });
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
     var token = sharedPreferences.getString("token");
@@ -142,29 +164,30 @@ addressdata.addAll(mapresponse!['address'][0]['description'].toString().split('-
       {
   "address": [
     {
-      "addressLine1": address1.text.length==0?"string":address1.text,
-      "addressLine2": address2.text.length==0?"string":address2.text,
+      "addressLine1": address1.text.isEmpty?"string":address1.text,
+      "addressLine2": address2.text.isEmpty?"string":address2.text,
       "addressType": "Current",
       "cityId": 1,
-      "description": city.text+"-"+state.text+"-"+dropDownValue!,
+      "description": "${city.text}-${state.text}-${dropDownValue!}",
       "fax": "string",
       "zip": "string"
     }
   ],
   "alternativeMobile": mobilenumber.text,
   "email":mapresponse!['email'],
-  "fatherName": fathername.text.length==0?"string":fathername.text,
+  // "fatherName": fathername.text.isEmpty?"string":fathername.text,
   "firstName": fname.text,
+  // "middleName":mname.text,
   "gender": "Male",
   "lastName": lname.text,
-  "motherTongue": motherTongue.text.length==0?"string":motherTongue.text,
+  // "motherTongue": motherTongue.text.isEmpty?"string":motherTongue.text,
   "primaryMobile": mobilenumber.text,
   "profileImage": "string",
   "roleId": 1,
   "userType": "USER"
 }
     );
-    print("update object $data");
+    print("update object $userid $data");
     response1 = await http.put(
       Uri.parse(
           "https://${AppConstants.ipaddress.ipaddress}/api/users/$userid"),
@@ -177,15 +200,22 @@ addressdata.addAll(mapresponse!['address'][0]['description'].toString().split('-
     );
     if (response1.statusCode == 200) {
       print('successful');
+       setState(() {
+        loader=false;
+      });
 _apicall();
     Fluttertoast.showToast(msg: "Saved", fontSize: 18);
 
       return mapresponse;
     } else {
+       setState(() {
+        loader=false;
+      });
       print('fetch unsuccessful');
       print(response1.body);
     }
   }
+  bool loader=false;
 GlobalKey<FormState> formkey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
@@ -204,97 +234,79 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
         appBarHeight -
         statusBarHeight -
         bottomSafeAreaHeight;
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: SafeArea(
-        child: Scaffold(
-            floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () async {
-              if (formkey.currentState!.validate()) {
-                 _updateapicall();
-              }
-            },
-            label: Container(
-              width: screensize.width * 0.8,
-              child: Align(
-                alignment: Alignment.center,
-                child: Text(
-                  'Save',
-                  style: FlutterFlowTheme.of(context).titleLarge.override(
-                        fontFamily: 'Inter Tight',
-                        color:  Color(0xFFD66223),
-                        fontSize: 16.0,
-                        letterSpacing: 0.0,
-                      ),
-                ),
-              ),
-            ),
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: BorderSide(
-                    width: 2,
-                    color:Color(0xFFD66223))),
-          ),
-          key: scaffoldKey,
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Color(0xFFFFF7EA),
-            automaticallyImplyLeading: false,
-            leading: FlutterFlowIconButton(
-              borderColor: Colors.transparent,
-              borderRadius: 30.0,
-              borderWidth: 1.0,
-              buttonSize: 60.0,
-              icon: Icon(
-                Icons.arrow_back_ios,
-                color: Color(0xFF1E2022),
-                size: 30.0,
-              ),
-              onPressed: () async {
-                Get.back();
-              },
-            ),
-            title: Text(
-              'My Profile',
-              style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    fontFamily: 'Inter Tight',
-                    color: Color(0xFF1E2022),
-                    fontSize: 22.0,
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-            actions: [
-              Align(
-                alignment: AlignmentDirectional(-1.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-                  child: FlutterFlowIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 8.0,
-                    buttonSize: 40.0,
-                    fillColor: Color(0x00FFFFFF),
-                    icon: Icon(
-                      Icons.menu,
-                      color: Color(0xFF1E2022),
-                      size: 30.0,
+    return SafeArea(
+      child: Scaffold(
+          floatingActionButtonLocation:
+            FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            if (formkey.currentState!.validate()) {
+               _updateapicall();
+            }
+          },
+          label: SizedBox(
+            width: screensize.width * 0.8,
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Save',
+                style: FlutterFlowTheme.of(context).titleLarge.override(
+                      fontFamily: 'Inter Tight',
+                      color:  const Color(0xFFD66223),
+                      fontSize: 16.0,
+                      letterSpacing: 0.0,
                     ),
-                    onPressed: () {
-                      print('IconButton pressed ...');
-                    },
-                  ),
-                ),
               ),
-            ],
-            centerTitle: true,
-            elevation: 0.0,
+            ),
           ),
-          body: Form(
-            key: formkey,
-            child: Container(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(
+                  width: 2,
+                  color:Color(0xFFD66223))),
+        ),
+        key: scaffoldKey,
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFFFFF7EA),
+          automaticallyImplyLeading: false,
+          leading: FlutterFlowIconButton(
+            borderColor: Colors.transparent,
+            borderRadius: 30.0,
+            borderWidth: 1.0,
+            buttonSize: 60.0,
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: Color(0xFF1E2022),
+              size: 30.0,
+            ),
+            onPressed: () async {
+              Get.back();
+            },
+          ),
+          title: Text(
+            'My Profile',
+            style: FlutterFlowTheme.of(context).headlineMedium.override(
+                  fontFamily: 'Inter Tight',
+                  color: const Color(0xFF1E2022),
+                  fontSize: 22.0,
+                  letterSpacing: 0.0,
+                  fontWeight: FontWeight.w500,
+                ),
+          ),
+    
+          centerTitle: true,
+          elevation: 0.0,
+        ),
+        body: Form(
+          key: formkey,
+          child: ModalProgressHUD(
+             inAsyncCall: loader,
+          progressIndicator: CircularProgressIndicator(
+            color: Color.fromARGB(255, 214, 98, 35),
+          ),
+            child: SizedBox(
               height: remainingHeight,
               child: SingleChildScrollView(
                   child: Padding(
@@ -308,7 +320,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                           'Personal Details',
                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                 fontFamily: 'Montserrat',
-                                color: Color(0xFFFD642A),
+                                color: const Color(0xFFFD642A),
                                 fontSize: 14.0,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.w500,
@@ -325,7 +337,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 14.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
@@ -366,7 +378,44 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                 }
                               },
                             ),
-                            SizedBox(
+                            //    const SizedBox(
+                            //   height: 10,
+                            // ),
+                            // TextFormField(
+                            //   controller: mname,
+                            //   autofocus: false,
+                            //   obscureText: false,
+                            //   decoration: InputDecoration(
+                            //     isDense: true,
+                            //     labelText: 'Middle name',
+                            //     labelStyle: FlutterFlowTheme.of(context)
+                            //         .labelMedium
+                            //         .override(
+                            //           fontFamily: 'Inter',
+                            //           letterSpacing: 0.0,
+                            //           fontWeight: FontWeight.w300,
+                            //         ),
+                            //     filled: true,
+                            //     fillColor: FlutterFlowTheme.of(context)
+                            //         .secondaryBackground,
+                            //   ),
+                            //   style: FlutterFlowTheme.of(context)
+                            //       .bodyMedium
+                            //       .override(
+                            //         fontFamily: 'Inter',
+                            //         letterSpacing: 0.0,
+                            //       ),
+                            //   cursorColor:
+                            //       FlutterFlowTheme.of(context).primaryText,
+                            //   validator: (value) {
+                            //     if (value!.isEmpty) {
+                            //       return "Required";
+                            //     } else {
+                            //       return null;
+                            //     }
+                            //   },
+                            // ),
+                            const SizedBox(
                               height: 10,
                             ),
                             TextFormField(
@@ -405,100 +454,100 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                             ),
                           ],
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 15, bottom: 10),
-                              child: Text(
-                                'Father Name',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
-                                      fontSize: 14.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                            ),
-                            TextFormField(
-                              controller: fathername,
-                              autofocus: false,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                isDense: true,
-                                labelText: 'Father name',
-                                labelStyle: FlutterFlowTheme.of(context)
-                                    .labelMedium
-                                    .override(
-                                      fontFamily: 'Inter',
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                filled: true,
-                                fillColor: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                              ),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                  ),
-                              cursorColor:
-                                  FlutterFlowTheme.of(context).primaryText,
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(top: 15, bottom: 10),
-                              child: Text(
-                                'Mother Tongue',
-                                style: FlutterFlowTheme.of(context)
-                                    .bodyMedium
-                                    .override(
-                                      fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
-                                      fontSize: 14.0,
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                              ),
-                            ),
-                            TextFormField(
-                              controller: motherTongue,
-                              autofocus: false,
-                              obscureText: false,
-                              decoration: InputDecoration(
-                                isDense: true,
-                                labelText: 'Mother Tongue',
-                                labelStyle: FlutterFlowTheme.of(context)
-                                    .labelMedium
-                                    .override(
-                                      fontFamily: 'Inter',
-                                      letterSpacing: 0.0,
-                                      fontWeight: FontWeight.w300,
-                                    ),
-                                filled: true,
-                                fillColor: FlutterFlowTheme.of(context)
-                                    .secondaryBackground,
-                              ),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                  ),
-                              cursorColor:
-                                  FlutterFlowTheme.of(context).primaryText,
-                            ),
-                          ],
-                        ),
+                        // Column(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   children: [
+                        //     Padding(
+                        //       padding: const EdgeInsets.only(top: 15, bottom: 10),
+                        //       child: Text(
+                        //         'Father Name',
+                        //         style: FlutterFlowTheme.of(context)
+                        //             .bodyMedium
+                        //             .override(
+                        //               fontFamily: 'Montserrat',
+                        //               color: const Color.fromARGB(255, 0, 0, 0),
+                        //               fontSize: 14.0,
+                        //               letterSpacing: 0.0,
+                        //               fontWeight: FontWeight.w500,
+                        //             ),
+                        //       ),
+                        //     ),
+                        //     TextFormField(
+                        //       controller: fathername,
+                        //       autofocus: false,
+                        //       obscureText: false,
+                        //       decoration: InputDecoration(
+                        //         isDense: true,
+                        //         labelText: 'Father name',
+                        //         labelStyle: FlutterFlowTheme.of(context)
+                        //             .labelMedium
+                        //             .override(
+                        //               fontFamily: 'Inter',
+                        //               letterSpacing: 0.0,
+                        //               fontWeight: FontWeight.w300,
+                        //             ),
+                        //         filled: true,
+                        //         fillColor: FlutterFlowTheme.of(context)
+                        //             .secondaryBackground,
+                        //       ),
+                        //       style: FlutterFlowTheme.of(context)
+                        //           .bodyMedium
+                        //           .override(
+                        //             fontFamily: 'Inter',
+                        //             letterSpacing: 0.0,
+                        //           ),
+                        //       cursorColor:
+                        //           FlutterFlowTheme.of(context).primaryText,
+                        //     ),
+                        //   ],
+                        // ),
+                        // Column(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   children: [
+                        //     Padding(
+                        //       padding: const EdgeInsets.only(top: 15, bottom: 10),
+                        //       child: Text(
+                        //         'Mother Tongue',
+                        //         style: FlutterFlowTheme.of(context)
+                        //             .bodyMedium
+                        //             .override(
+                        //               fontFamily: 'Montserrat',
+                        //               color: const Color.fromARGB(255, 0, 0, 0),
+                        //               fontSize: 14.0,
+                        //               letterSpacing: 0.0,
+                        //               fontWeight: FontWeight.w500,
+                        //             ),
+                        //       ),
+                        //     ),
+                        //     TextFormField(
+                        //       controller: motherTongue,
+                        //       autofocus: false,
+                        //       obscureText: false,
+                        //       decoration: InputDecoration(
+                        //         isDense: true,
+                        //         labelText: 'Mother Tongue',
+                        //         labelStyle: FlutterFlowTheme.of(context)
+                        //             .labelMedium
+                        //             .override(
+                        //               fontFamily: 'Inter',
+                        //               letterSpacing: 0.0,
+                        //               fontWeight: FontWeight.w300,
+                        //             ),
+                        //         filled: true,
+                        //         fillColor: FlutterFlowTheme.of(context)
+                        //             .secondaryBackground,
+                        //       ),
+                        //       style: FlutterFlowTheme.of(context)
+                        //           .bodyMedium
+                        //           .override(
+                        //             fontFamily: 'Inter',
+                        //             letterSpacing: 0.0,
+                        //           ),
+                        //       cursorColor:
+                        //           FlutterFlowTheme.of(context).primaryText,
+                        //     ),
+                        //   ],
+                        // ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -510,7 +559,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 14.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
@@ -555,7 +604,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                         ),
                       ],
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     Column(
@@ -565,7 +614,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                           'Address Details',
                           style: FlutterFlowTheme.of(context).bodyMedium.override(
                                 fontFamily: 'Montserrat',
-                                color: Color(0xFFFD642A),
+                                color: const Color(0xFFFD642A),
                                 fontSize: 14.0,
                                 letterSpacing: 0.0,
                                 fontWeight: FontWeight.w500,
@@ -582,7 +631,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 14.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
@@ -616,7 +665,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                               cursorColor:
                                   FlutterFlowTheme.of(context).primaryText,
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             TextFormField(
@@ -659,7 +708,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 14.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
@@ -667,6 +716,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                               ),
                             ),
                             TextFormField(
+                              readOnly: true,
                               controller: city,
                               autofocus: false,
                               obscureText: false,
@@ -706,7 +756,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 14.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
@@ -714,6 +764,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                               ),
                             ),
                             TextFormField(
+                                readOnly: true,
                               controller: state,
                               autofocus: false,
                               obscureText: false,
@@ -753,7 +804,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     .bodyMedium
                                     .override(
                                       fontFamily: 'Montserrat',
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: const Color.fromARGB(255, 0, 0, 0),
                                       fontSize: 14.0,
                                       letterSpacing: 0.0,
                                       fontWeight: FontWeight.w500,
@@ -763,7 +814,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                             FlutterFlowDropDown<String>(
                               controller: dropDownValueController ??=
                                   FormFieldController<String>(null),
-                              options: ['India', 'USA', 'Australia'],
+                              options: ['India'],
                               onChanged: (val) =>
                                   safeSetState(() => dropDownValue = val),
                               width: double.infinity,
@@ -775,7 +826,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                                     letterSpacing: 0.0,
                                     fontWeight: FontWeight.w300,
                                   ),
-                              hintText:dropDownValue==null? 'Select Country':dropDownValue,
+                              hintText:dropDownValue ?? 'Select Country',
                               icon: Icon(
                                 Icons.keyboard_arrow_down_rounded,
                                 color: FlutterFlowTheme.of(context).secondaryText,
@@ -787,7 +838,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                               borderColor: Colors.transparent,
                               borderWidth: 0.0,
                               borderRadius: 8.0,
-                              margin: EdgeInsetsDirectional.fromSTEB(
+                              margin: const EdgeInsetsDirectional.fromSTEB(
                                   12.0, 0.0, 12.0, 0.0),
                               hidesUnderline: true,
                               isOverButton: false,

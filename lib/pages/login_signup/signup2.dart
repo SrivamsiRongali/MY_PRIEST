@@ -12,6 +12,8 @@ import 'signin.dart';
 
 
 class signup2 extends StatefulWidget {
+  const signup2({super.key});
+
   @override
   State<signup2> createState() => _signup2State();
 }
@@ -21,6 +23,7 @@ class _signup2State extends State<signup2> {
   bool securetext2 = true;
   bool visibility = true;
   TextEditingController firstnamecontroller = TextEditingController();
+  // TextEditingController middlenamecontroller = TextEditingController();
   TextEditingController lastnamecontroller = TextEditingController();
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
@@ -157,7 +160,49 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                               }
                             },
                           ),
-                        ),  Padding(
+                        ), 
+                        // Padding(
+                        //    padding: const EdgeInsets.only(bottom: 10),
+                        //   child: TextFormField(
+                        //     controller: middlenamecontroller,
+                        //     keyboardType: TextInputType.name,
+                        //     cursorColor: Colors.black,
+                        //     decoration: InputDecoration(
+                        //     filled: true,
+                        //     fillColor: Colors.white,
+                        //       labelText: "Middle name",
+                        //       labelStyle: TextStyle(color: Color.fromARGB(255, 204, 204, 204)),
+                        //       // hintText: "Enter Email",
+                        //       hintStyle: TextStyle(fontWeight: FontWeight.bold),
+                        //       border:  OutlineInputBorder(
+                        //           borderRadius: BorderRadius.circular(5),
+                        //           borderSide:
+                        //               BorderSide(color: Color.fromARGB(255, 232, 232, 232), width: 1)),
+                        //       focusedBorder: OutlineInputBorder(
+                        //           borderRadius: BorderRadius.circular(5),
+                        //           borderSide:
+                        //               BorderSide(color: Color.fromARGB(255, 214, 98, 35), width: 1)),
+                        //       prefixIcon: Icon(
+                        //         Icons.person,
+                        //         color: Color.fromARGB(255, 204, 204, 204),
+                        //       ),
+                              
+                        //     ),
+                        //     textInputAction: TextInputAction.next,
+                        //     // onEditingComplete: () {
+                        //     //   FocusScope.of(context).requestFocus(passordfocus);
+                        //     // },
+                        //     maxLines: 1,
+                        //     validator: (value) {
+                        //       if (value!.isEmpty ) {
+                        //         return "Please enter Middle name";
+                        //       } else {
+                        //         return null;
+                        //       }
+                        //     },
+                        //   ),
+                        // ),
+                         Padding(
                            padding: const EdgeInsets.only(bottom: 10),
                           child: TextFormField(
                             controller: lastnamecontroller,
@@ -668,7 +713,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
   "firstName": firstnamecontroller.text,
   "gender": "Female",
   "lastName": lastnamecontroller.text,
-  
+  // "middleName": middlenamecontroller.text,
   "password":  password,
   "primaryMobile": mobilenumber.toString(),
   "profileImage": "string",

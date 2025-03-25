@@ -50,14 +50,16 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="mypriest" android:host="mypriest.com" />
             </intent-filter>
-
+ 
         </activity>
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
-        <meta-data
+         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+            <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyCmFD-2hE9uqIYiLzqOIf61Jl1PWnMb3so"/> 
 
 
 

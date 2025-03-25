@@ -17,6 +17,8 @@ import '../../shared.dart';
 import 'signup1.dart';
 
 class signin extends StatefulWidget {
+  const signin({super.key});
+
   @override
   State<signin> createState() => _signinState();
 }
@@ -545,9 +547,10 @@ class _signinState extends State<signin> {
       // var Lastname = mapresponse['user']['lastName'];
       final SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
+          sharedPreferences.setString("name","${ mapresponse['user']['firstName']} ${mapresponse['user']['lastName']}");
       sharedPreferences.setString("token", mapresponse['token']);
       sharedPreferences.setInt("userid", mapresponse['user']['id']);
-      sharedPreferences.setString("name", mapresponse['user']['firstName']+' '+mapresponse['user']['lastName']);
+      
       showDialog(
           context: context,
           builder: (context) => AlertDialog(

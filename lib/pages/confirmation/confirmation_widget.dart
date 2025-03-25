@@ -3,8 +3,11 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:my_priest/index.dart';
 import 'package:my_priest/shared.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+// import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../my_bookings/Mybookings.dart';
@@ -26,17 +29,24 @@ class ConfirmationWidget extends StatefulWidget {
   @override
   State<ConfirmationWidget> createState() => _ConfirmationWidgetState();
 }
+
+Razorpay razorpay = Razorpay();
 late ValueNotifier<String> selectedaddressdata;
 late ValueNotifier<List> allcitylist;
+
 class _ConfirmationWidgetState extends State<ConfirmationWidget> {
   late ConfirmationModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  var data = Get.arguments;
+  var priestandservicedata = Get.arguments;
   @override
   void initState() {
     super.initState();
-       selectedaddressdata = ValueNotifier<String>("");
+    razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
+    razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
+    razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, handleExternalWalletSelected);
+
+    selectedaddressdata = ValueNotifier<String>("");
     allcitylist = ValueNotifier<List>([]);
     _model = createModel(context, () => ConfirmationModel());
 
@@ -60,69 +70,82 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
 
     _model.textController7 ??= TextEditingController();
     _model.textFieldFocusNode7 ??= FocusNode();
-    print("passed data ${data[0]}");
-    print("passed data ${data[1]}");
+
+    print("passed data ${priestandservicedata[0]}");
+    print("passed data ${priestandservicedata[1]}");
   }
-Future<List<String>> fetchSearchPredictions(String query) async {
-  // Ensure the query is not empty
-  if (query.isEmpty) {
-    return [];
-  }
-  print('''google url 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
+
+  bool cityresponse=false;
+  Future<List<String>> fetchSearchPredictions(String query) async {
+    // Ensure the query is not empty
+    if (query.isEmpty) {
+      return [];
+    }
+    print(
+        '''google url 'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
       'input=$query&'
       'key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE&'
       'types=geocode&'
       'language=en-GB&'
       'components=country:IN''');
-  // Define the endpoint with dynamic input
-  final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
-      'input=$query&'
-      'key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE&'
-      'types=geocode&'
-      'language=en-GB&'
-      'components=country:IN');
+    // Define the endpoint with dynamic input
+    final url = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json?'
+        'input=$query&'
+        'key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE&'
+        'types=geocode&'
+        'language=en-GB&'
+        'components=country:IN');
 
-  // Headers (optional for this API)
-  final headers = {
-    'accept': '/',
-    'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
-    'user-agent': 'Flutter App',
-  };
+    // Headers (optional for this API)
+    final headers = {
+      'accept': '/',
+      'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+      'user-agent': 'Flutter App',
+    };
 
-  try {
-    // Send GET request
-    final response = await http.get(url, headers: headers);
+    try {
+      // Send GET request
+      final response = await http.get(url, headers: headers);
 
-    // Check the response status
-    if (response.statusCode == 200) {
-      // Decode JSON response
-      final jsonResponse = json.decode(response.body);
+      // Check the response status
+      if (response.statusCode == 200) {
+        setState(() {
+          cityresponse=false;
+        });
+        // Decode JSON response
+        final jsonResponse = json.decode(response.body);
 
-      // Extract predictions
-      final predictions = jsonResponse['predictions'] as List;
-      setState(() {
-        allcitylist.value=jsonResponse['predictions'] ;
-      });
-      print('successful fetch data: ${response.statusCode} ${jsonResponse['predictions'][0]['structured_formatting']}');
-      return predictions.map((p) => p['description'] as String).toList();
-    } else {
-      print('Failed to fetch data: ${response.statusCode} ${response.body}');
+        // Extract predictions
+        final predictions = jsonResponse['predictions'] as List;
+        setState(() {
+          allcitylist.value = jsonResponse['predictions'];
+        });
+        print(
+            'successful fetch data: ${response.statusCode} ${jsonResponse['predictions'][0]['structured_formatting']}');
+        return predictions.map((p) => p['description'] as String).toList();
+      } else {
+         setState(() {
+          cityresponse=true;
+        });
+        print('Failed to fetch data: ${response.statusCode} ${response.body}');
+        return [];
+      }
+    } catch (e) {
+       setState(() {
+          cityresponse=true;
+        });
+      print('Error efsf: $e');
       return [];
     }
-  } catch (e) {
-    print('Error: $e');
-    return [];
   }
-}
- citybottomsheet(TextEditingController city) async {
+
+  citybottomsheet(TextEditingController city) async {
     return showModalBottomSheet(
       isDismissible: true,
       isScrollControlled: true,
       context: context,
       builder: (context) {
-
-
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.only(top: 50),
@@ -212,12 +235,12 @@ Future<List<String>> fetchSearchPredictions(String query) async {
                                 (BuildContext context, value, Widget? child) =>
                                     Container(
                               child: allcitylist.value == null
-                                  ? Container(
+                                  ? SizedBox(
                                       width: double.infinity,
                                       height: 200,
                                       child: Center(
                                           child: Text(
-                                        'No City found',
+                                        'Find your address',
                                         style: FlutterFlowTheme.of(context)
                                             .headlineSmall
                                             .override(
@@ -229,13 +252,13 @@ Future<List<String>> fetchSearchPredictions(String query) async {
                                               fontWeight: FontWeight.normal,
                                             ),
                                       )))
-                                  : allcitylist.value!.length == 0
-                                      ? Container(
+                                  :allcitylist.value!.isEmpty && cityresponse==false
+                                      ? SizedBox(
                                           width: double.infinity,
                                           height: 200,
                                           child: Center(
                                               child: Text(
-                                            'No City found',
+                                            'Find your address',
                                             style: FlutterFlowTheme.of(context)
                                                 .headlineSmall
                                                 .override(
@@ -247,12 +270,30 @@ Future<List<String>> fetchSearchPredictions(String query) async {
                                                   fontWeight: FontWeight.normal,
                                                 ),
                                           )))
-                                      : ListView.builder(
+                                      : allcitylist.value.isEmpty && cityresponse==true
+                                  ? SizedBox(
+                                      width: double.infinity,
+                                      height: 200,
+                                      child: Center(
+                                          child: Text(
+                                        'No city found',
+                                        style: FlutterFlowTheme.of(context)
+                                            .headlineSmall
+                                            .override(
+                                              fontFamily: 'Outfit',
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .primaryText,
+                                              fontSize: 20.0,
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                      )))
+                                  : ListView.builder(
                                           // controller: controller,
                                           physics: BouncingScrollPhysics(),
                                           itemCount: allcitylist.value == null
                                               ? 0
-                                              : allcitylist.value!.length,
+                                              : allcitylist.value.length,
                                           padding: EdgeInsets.zero,
                                           shrinkWrap: true,
                                           scrollDirection: Axis.vertical,
@@ -284,20 +325,48 @@ Future<List<String>> fetchSearchPredictions(String query) async {
                                                   child: GestureDetector(
                                                     onTap: () async {
                                                       // _model.address2textController4.text=value[index]['structured_formatting']['secondary_text'];
-                                                      
-                                                      _model.address1textController3.text=value[index]['structured_formatting']['main_text'];
-                                                      List addressdatafromgoogle=[];
-                                                      addressdatafromgoogle.addAll(value[index]['structured_formatting']['secondary_text'].split(',')
-                                                      );
-                                                      _model.statetextController6.text=addressdatafromgoogle[addressdatafromgoogle.length-2];
-                                                      _model.citytextController5.text=addressdatafromgoogle[addressdatafromgoogle.length-3];
-                                                      _model.dropDownValue=addressdatafromgoogle.last;
-                                                      addressdatafromgoogle.removeRange(addressdatafromgoogle.length - 3, addressdatafromgoogle.length);
-                                                      _model.address2textController4.text=addressdatafromgoogle.join(',');
-                                                    
+
+                                                   
+                                                      List
+                                                          addressdatafromgoogle =
+                                                          [];
+                                                      addressdatafromgoogle
+                                                          .addAll(value[index][
+                                                                      'structured_formatting']
+                                                                  [
+                                                                  'secondary_text']
+                                                              .split(','));
+                                                      _model.statetextController6
+                                                              .text =
+                                                          addressdatafromgoogle[
+                                                              addressdatafromgoogle
+                                                                      .length -
+                                                                  2];
+                                                      _model.citytextController5
+                                                              .text =
+                                                          addressdatafromgoogle[
+                                                              addressdatafromgoogle
+                                                                      .length -
+                                                                  3];
+                                                      _model.dropDownValue =
+                                                          addressdatafromgoogle
+                                                              .last;
+                                                      addressdatafromgoogle
+                                                          .removeRange(
+                                                              addressdatafromgoogle
+                                                                      .length -
+                                                                  3,
+                                                              addressdatafromgoogle
+                                                                  .length);
+                                                      _model.address1textController3
+                                                              .text =
+                                                         value[index][
+                                                              'structured_formatting']
+                                                          ['main_text']+addressdatafromgoogle
+                                                              .join(',');
+
                                                       Get.back();
                                                       this.setState(() {});
-                                                     
                                                     },
                                                     child: Row(
                                                       mainAxisSize:
@@ -352,40 +421,42 @@ Future<List<String>> fetchSearchPredictions(String query) async {
       },
     );
   }
+
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
-  bool loader = true;
+  bool loader = false;
   String selectedTime = "00:00";
+  int bookingid=0;
+  String servicename='';
   Future userbooking(String date, String time, int priestid, List serviceid,
       String notes) async {
     setState(() {
-      loader = false;
+      loader = true;
     });
-    ;
-    print(
-        " date = ${date}T${time}:00.00Z,priest=$priestid,serviceid=$serviceid");
+    print(" date = ${date}T$time:00.00Z,priest=$priestid,serviceid=$serviceid");
     var data = json.encode({
       "address": {
-    "addressLine1": _model.address1textController3.text,
-    "addressLine2": _model.address2textController4.text,
-    "addressType": "Current",
-    "cityId": 1,
-    "currentLatitude": 0,
-    "currentLongitude": 0,
-    "description": notes,
-    "fax": "string",
-    "zip": "string"
-  },
+        "addressLine1": _model.address2textController4.text,
+        "addressLine2": _model.address1textController3.text,
+        "addressType": "Current",
+        "cityId": 1,
+        "currentLatitude": 0,
+        "currentLongitude": 0,
+        "description": "${_model.citytextController5.text}-${_model.statetextController6.text}-${_model.dropDownValue!}",
+        "fax": "string",
+        "zip": "string"
+      },
       "bookingStatus": "Initiated",
-      "bookingDate": "${date}T${time}:00",
-      "description": _model.textController7.text,
+      "bookingDate": "${date}T$time:00",
+      "description": notes,
       "priestId": priestid,
       "servicesId": serviceid,
     });
-  print("booking object $data");
+    print("booking object $data");
     Map mapresponse;
+     Map mapresponse2;
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
-    sharedPreferences.setString("servicetime", "${date},${time}");
+    sharedPreferences.setString("servicetime", "$date,$time");
     var token = sharedPreferences.getString("token");
     http.Response response = await http.post(
         Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings"),
@@ -399,30 +470,120 @@ Future<List<String>> fetchSearchPredictions(String query) async {
     if (response.statusCode == 200) {
       mapresponse = json.decode(response.body);
       setState(() {
-        loader = true;
+        loader = false;
+        bookingid=mapresponse['id'];
       });
-      Get.to(SuccessWidget(),
-          );
+      
+
       print('Booking successfull');
 
       print(response.body);
+ http.Response response2 = await http.post(
+        Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings/razor-pay"),
+        headers: {
+          "accept": "*/*",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: data);
 
-      //     razorpay.open({
-      // 'key': 'rzp_test_mtBEoRXCieHNgB',
-      // 'amount': mapresponse['paymentParams']['amount'], //in paise.
-      // 'name': 'first order',
-      // 'order_id': '${mapresponse['paymentParams']['id']}', // Generate order_id using Orders API
-      // 'description': 'Fine T-Shirt',
-      // 'timeout': 600, // in seconds
-      // 'prefill': {
-      //   'contact': '8919806771',
-      //   'email': 'rongalisrivamsi@gmail.com'
-      // }});
+    if (response2.statusCode == 200) {
+      mapresponse2 = json.decode(response2.body);
+      setState(() {
+        loader = false;
+      });
 
-      ;
+      print('Booking successfull');
+
+      print(response2.body);
+//  Get.offAll(
+//       SuccessWidget(),
+//     );
+// {
+//   "amount": 9900,
+//   "attempts": 0,
+//   "currency": "INR",
+//   "entity": "order",
+//   "id": "order_QAXvPRQcDvVlvy",
+//   "notes": {
+//     "key1": "JJJK TrustKotla Marg, Rouse Avenue, Mata Sundari Railway Colony Mandi House Delhi India",
+//     "key2": "value2"
+//   },
+//   "receipt": "89",
+//   "status": "created",
+//   "amount_due": 9900,
+//   "amount_paid": 0,
+//   "created_at": 1742801525,
+//   "offer_id": null
+// }
+print('''
+        'key' :'rzp_test_mtBEoRXCieHNgB'
+        'amount':${ mapresponse2['amount']}, //in paise.
+        'name': 'Payment for Service(s) - $servicename',
+        'order_id':
+       
+            ${mapresponse2['id']}
+            , // Generate order_id using Orders API
+        'description': 'Fine T-Shirt',
+        'timeout': '600', // in seconds
+        'prefill': {
+          'contact': '8919806771',
+          'email': 'rongalisrivamsi@gmail.com'
+        }
+      ''');
+      razorpay.open({
+        'key': 'rzp_test_mtBEoRXCieHNgB',
+        'amount':
+        
+        mapresponse2['amount'], //in paise.
+        'name': 'Payment for Service(s) - $servicename',
+        'order_id':
+       
+            '${mapresponse2['id']}'
+            , // Generate order_id using Orders API
+        'description': 'Fine T-Shirt',
+        'timeout': 600, // in seconds
+        'prefill': {
+          'contact': '8919806771',
+          'email': 'rongalisrivamsi@gmail.com'
+        }
+      });
     } else {
       setState(() {
-        loader = true;
+        loader = false;
+      });
+
+      print(" data =$data");
+      print('fail');
+      Get.defaultDialog(
+        title: "Unable book ${response.body}",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text("Please try after some time",
+              style: TextStyle(color: Colors.black)),
+        ),
+        actions: [
+          MaterialButton(
+            color: Color.fromARGB(255, 255, 123, 0),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'ok',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+      print(response.statusCode);
+      print(response.body);
+    }
+    } else {
+      setState(() {
+        loader = false;
       });
 
       print(" data =$data");
@@ -454,6 +615,148 @@ Future<List<String>> fetchSearchPredictions(String query) async {
       print(response.body);
     }
   }
+    Future updatebookingstatus() async {
+    setState(() {
+      loader = true;
+    });
+    // print(" date = ${date}T$time:00.00Z,priest=$priestid,serviceid=$serviceid");
+    var data = json.encode({
+  "bookingStatus": "Booked",
+  "paymentReference": "string"
+});
+    print("booking object $data");
+    Map mapresponse;
+     Map mapresponse2;
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+  
+    var token = sharedPreferences.getString("token");
+    http.Response response = await http.put(
+        Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings/payment/$bookingid"),
+        headers: {
+          "accept": "*/*",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: data);
+
+    if (response.statusCode == 200) {
+      mapresponse = json.decode(response.body);
+      
+         Get.offAll(
+      SuccessWidget(),
+    );
+
+      print('Booking status updated successfully');
+
+      print(response.body);
+ 
+    } else {
+      setState(() {
+        loader = false;
+      });
+      Get.offAll(
+      SuccessWidget(),
+    );
+
+      print(" data =$data");
+      print('fail');
+      Get.defaultDialog(
+        title: "Unable to update payment status",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text("Please try after some time",
+              style: TextStyle(color: Colors.black)),
+        ),
+        actions: [
+          MaterialButton(
+            color: Color.fromARGB(255, 255, 123, 0),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'ok',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+      print(response.statusCode);
+      print(response.body);
+    }
+  }
+
+
+  void handlePaymentErrorResponse(PaymentFailureResponse response) {
+    /*
+    * PaymentFailureResponse contains three values:
+    * 1. Error Code
+    * 2. Error Description
+    * 3. Metadata
+    * */
+   
+    showAlertDialog(context, "Payment Failed",
+        "Code: ${response.code}\nDescription: ${response.message}\nMetadata:${response.error.toString()}");
+  }
+
+  void handlePaymentSuccessResponse(PaymentSuccessResponse response) {
+    /*
+    * Payment Success Response contains three values:
+    * 1. Order ID
+    * 2. Payment ID
+    * 3. Signature
+    * */
+   
+  updatebookingstatus();
+    // showAlertDialog(
+    //     context, "Payment Successful", "Payment ID: ${response.paymentId}");
+    // print("object ${response} ${response.paymentId} ");
+  }
+
+  void handleExternalWalletSelected(ExternalWalletResponse response) {
+    showAlertDialog(
+        context, "External Wallet Selected", "${response.walletName}");
+  }
+
+  void showAlertDialog(BuildContext context, String title, String message) {
+    // set up the buttons
+    Widget continueButton = ElevatedButton(
+      child: const Text("Ok"),
+      onPressed: () {
+        Get.back();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      content: Text(
+        title,
+        style: TextStyle(fontSize: 20),
+      ),
+      actions: [continueButton],
+    );
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
+  // Map<String, Object> getPaymentOptions() {
+  //   return {
+  //     'key': 'rzp_test_mtBEoRXCieHNgB',
+  //     'amount': 99900, //in paise.
+  //     'name': 'first order',
+  //     'order_id': 'order_Oi2vn1g1m4CujE', // Generate order_id using Orders API
+  //     'description': 'Fine T-Shirt',
+  //     'timeout': 600, // in seconds
+  //     'prefill': {'contact': '8919806771', 'email': 'rongalisrivamsi@gmail.com'}
+  //   };
+  // }
 
   @override
   void dispose() {
@@ -487,875 +790,939 @@ Future<List<String>> fetchSearchPredictions(String query) async {
               Get.back();
             },
           ),
-          actions: [
-            Align(
-              alignment: AlignmentDirectional(-1.0, 0.0),
-              child: Padding(
-                padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-                child: FlutterFlowIconButton(
-                  borderColor: Colors.transparent,
-                  borderRadius: 8.0,
-                  buttonSize: 40.0,
-                  fillColor: Color(0x00FFFFFF),
-                  icon: Icon(
-                    Icons.menu,
-                    color: Color(0xFF1E2022),
-                    size: 30.0,
-                  ),
-                  onPressed: () {
-                    print('IconButton pressed ...');
-                  },
-                ),
-              ),
-            ),
-          ],
+      
           centerTitle: true,
           elevation: 0.0,
         ),
         body: SafeArea(
           top: true,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-            ),
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(15.0, 15.0, 15.0, 10.0),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: formkey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(50.0),
-                                  child: Image.asset(
-                                    'assets/images/Mask_Group.png',
-                                    width: 70.0,
-                                    height: 70.0,
-                                    fit: BoxFit.cover,
+          child: ModalProgressHUD(
+             inAsyncCall: loader,
+          progressIndicator: CircularProgressIndicator(
+            color: Color.fromARGB(255, 214, 98, 35),
+          ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+              ),
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(15.0, 15.0, 15.0, 10.0),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: formkey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(50.0),
+                                    child: Image.asset(
+                                      'assets/images/Mask_Group.png',
+                                      width: 70.0,
+                                      height: 70.0,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsetsDirectional.fromSTEB(
-                                      15.0, 0.0, 0.0, 0.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        data[1]['priest']['user']['userName'],
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Inter',
-                                              fontSize: 12.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w300,
-                                            ),
-                                      ),
-                                      SizedBox(
-                                        height: 5,
-                                      ),
-                                     data[1]['priest']['user']['address'].length==0?Container(): Text(
-                                        data[1]['priest']['user']['address'][0]
-                                                ['city']['name'] +
-                                            ', ' +
-                                            data[1]['priest']['user']['address']
-                                                [0]['city']['state']['name'] +
-                                            ', ' +
-                                            data[1]['priest']['user']['address']
-                                                    [0]['city']['state']
-                                                ['country']['name'],
-                                        style: FlutterFlowTheme.of(context)
-                                            .bodyMedium
-                                            .override(
-                                              fontFamily: 'Inter',
-                                              fontSize: 12.0,
-                                              letterSpacing: 0.0,
-                                              fontWeight: FontWeight.w300,
-                                            ),
-                                      ),
-                                      SizedBox(
-                                        height: 5,
-                                      ),
-                                      Row(
-                                        mainAxisSize: MainAxisSize.max,
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFF2F3F4),
-                                              borderRadius:
-                                                  BorderRadius.circular(24.0),
-                                            ),
-                                            child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      15.0, 5.0, 15.0, 5.0),
-                                              child: Text(
-                                                'Hindi',
+                                  Padding(
+                                    padding: EdgeInsetsDirectional.fromSTEB(
+                                        15.0, 0.0, 0.0, 0.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.max,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          priestandservicedata[1]['priest']
+                                              ['user']['userName'],
+                                          style: FlutterFlowTheme.of(context)
+                                              .bodyMedium
+                                              .override(
+                                                fontFamily: 'Inter',
+                                                fontSize: 12.0,
+                                                letterSpacing: 0.0,
+                                                fontWeight: FontWeight.w300,
+                                              ),
+                                        ),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        priestandservicedata[1]['priest']['user']
+                                                        ['address']
+                                                    .length ==
+                                                0
+                                            ? Container()
+                                            : Text(
+                                                priestandservicedata[1]['priest']
+                                                            ['user']['address'][0]
+                                                        ['city']['name'] +
+                                                    ', ' +
+                                                    priestandservicedata[1]
+                                                                ['priest']['user']
+                                                            ['address'][0]['city']
+                                                        ['state']['name'] +
+                                                    ', ' +
+                                                    priestandservicedata[1]
+                                                                ['priest']['user']
+                                                            ['address'][0]['city']
+                                                        ['state']['country']['name'],
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'Inter',
-                                                          fontSize: 10.0,
+                                                          fontSize: 12.0,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
                                                               FontWeight.w300,
                                                         ),
                                               ),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFF2F3F4),
+                                                borderRadius:
+                                                    BorderRadius.circular(24.0),
+                                              ),
+                                              child: Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        15.0, 5.0, 15.0, 5.0),
+                                                child: Text(
+                                                  'Hindi',
+                                                  style:
+                                                      FlutterFlowTheme.of(context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily: 'Inter',
+                                                            fontSize: 10.0,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FontWeight.w300,
+                                                          ),
+                                                ),
+                                              ),
                                             ),
+                                            Container(
+                                              width: 5.0,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .secondaryBackground,
+                                              ),
+                                            ),
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                color: Color(0xFFF2F3F4),
+                                                borderRadius:
+                                                    BorderRadius.circular(24.0),
+                                              ),
+                                              child: Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        15.0, 5.0, 15.0, 5.0),
+                                                child: Text(
+                                                  'telugu',
+                                                  style:
+                                                      FlutterFlowTheme.of(context)
+                                                          .bodyMedium
+                                                          .override(
+                                                            fontFamily: 'Inter',
+                                                            fontSize: 10.0,
+                                                            letterSpacing: 0.0,
+                                                            fontWeight:
+                                                                FontWeight.w300,
+                                                          ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              0.0, 20.0, 0.0, 10.0),
+                          child: ListView.builder(
+                            itemCount: priestandservicedata[0].length,
+                            shrinkWrap: true,
+                            itemBuilder: (BuildContext context, int index) =>
+                                Padding(
+                              padding: const EdgeInsets.only(top: 5, bottom: 5),
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFF2F3F4),
+                                ),
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      10.0, 10.0, 10.0, 10.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Icon(
+                                            Icons.check_circle,
+                                            color: FlutterFlowTheme.of(context)
+                                                .success,
+                                            size: 24.0,
                                           ),
-                                          Container(
-                                            width: 5.0,
-                                            decoration: BoxDecoration(
-                                              color:
-                                                  FlutterFlowTheme.of(context)
-                                                      .secondaryBackground,
-                                            ),
-                                          ),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFF2F3F4),
-                                              borderRadius:
-                                                  BorderRadius.circular(24.0),
-                                            ),
-                                            child: Padding(
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      15.0, 5.0, 15.0, 5.0),
+                                          Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    5.0, 0.0, 0.0, 0.0),
+                                            child: SizedBox(
+                                              width: screensize.width * 0.62,
                                               child: Text(
-                                                'telugu',
+                                                priestandservicedata[0][index]
+                                                    ['name'],
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium
                                                         .override(
                                                           fontFamily: 'Inter',
-                                                          fontSize: 10.0,
+                                                          fontSize: 16.0,
                                                           letterSpacing: 0.0,
                                                           fontWeight:
-                                                              FontWeight.w300,
+                                                              FontWeight.normal,
                                                         ),
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            0.0, 20.0, 0.0, 10.0),
-                        child: ListView.builder(
-                          itemCount: data[0].length,
-                          shrinkWrap: true,
-                          itemBuilder: (BuildContext context, int index) =>
-                              Padding(
-                            padding: const EdgeInsets.only(top: 5, bottom: 5),
-                            child: Container(
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Color(0xFFF2F3F4),
-                              ),
-                              child: Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    10.0, 10.0, 10.0, 10.0),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.max,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.max,
-                                      children: [
-                                        Icon(
-                                          Icons.check_circle,
+                                      Container(
+                                        decoration: BoxDecoration(
                                           color: FlutterFlowTheme.of(context)
-                                              .success,
-                                          size: 24.0,
+                                              .secondaryBackground,
+                                          borderRadius:
+                                              BorderRadius.circular(24.0),
                                         ),
-                                        Padding(
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  5.0, 0.0, 0.0, 0.0),
-                                          child: Container(
-                                            width: screensize.width * 0.62,
-                                            child: Text(
-                                              data[0][index]['name'],
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style:
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium
-                                                      .override(
-                                                        fontFamily: 'Inter',
-                                                        fontSize: 16.0,
-                                                        letterSpacing: 0.0,
-                                                        fontWeight:
-                                                            FontWeight.normal,
-                                                      ),
-                                            ),
+                                        child: Padding(
+                                          padding: EdgeInsetsDirectional.fromSTEB(
+                                              15.0, 5.0, 15.0, 5.0),
+                                          child: Text(
+                                            '${NumberFormat.simpleCurrency(locale: "hi-IN", decimalDigits: 2).format(priestandservicedata[0][index]['defaultPrice'])}',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily: 'Inter',
+                                                  fontSize: 10.0,
+                                                  letterSpacing: 0.0,
+                                                  fontWeight: FontWeight.w300,
+                                                ),
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: FlutterFlowTheme.of(context)
-                                            .secondaryBackground,
-                                        borderRadius:
-                                            BorderRadius.circular(24.0),
                                       ),
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            15.0, 5.0, 15.0, 5.0),
-                                        child: Text(
-                                          '${NumberFormat.simpleCurrency(locale: "hi-IN", decimalDigits: 2).format(data[0][index]['defaultPrice'])}',
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                fontFamily: 'Inter',
-                                                fontSize: 10.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w300,
-                                              ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                      // Padding(
-                      //   padding:
-                      //       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
-                      //   child: Container(
-                      //     width: double.infinity,
-                      //     decoration: BoxDecoration(
-                      //       color: Color(0xFFF2F3F4),
-                      //     ),
-                      //     child: Padding(
-                      //       padding: EdgeInsetsDirectional.fromSTEB(
-                      //           10.0, 10.0, 10.0, 10.0),
-                      //       child: Row(
-                      //         mainAxisSize: MainAxisSize.max,
-                      //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //         children: [
-                      //           Row(
-                      //             mainAxisSize: MainAxisSize.max,
-                      //             children: [
-                      //               Icon(
-                      //                 Icons.check_circle,
-                      //                 color: FlutterFlowTheme.of(context).success,
-                      //                 size: 24.0,
-                      //               ),
-                      //               Padding(
-                      //                 padding: EdgeInsetsDirectional.fromSTEB(
-                      //                     5.0, 0.0, 0.0, 0.0),
-                      //                 child: Text(
-                      //                   'Chandi Homam',
-                      //                   style: FlutterFlowTheme.of(context)
-                      //                       .bodyMedium
-                      //                       .override(
-                      //                         fontFamily: 'Inter',
-                      //                         fontSize: 16.0,
-                      //                         letterSpacing: 0.0,
-                      //                         fontWeight: FontWeight.normal,
-                      //                       ),
-                      //                 ),
-                      //               ),
-                      //             ],
-                      //           ),
-                      //           Container(
-                      //             decoration: BoxDecoration(
-                      //               color: FlutterFlowTheme.of(context)
-                      //                   .secondaryBackground,
-                      //               borderRadius: BorderRadius.circular(24.0),
-                      //             ),
-                      //             child: Padding(
-                      //               padding: EdgeInsetsDirectional.fromSTEB(
-                      //                   15.0, 5.0, 15.0, 5.0),
-                      //               child: Text(
-                      //                 '800',
-                      //                 style: FlutterFlowTheme.of(context)
-                      //                     .bodyMedium
-                      //                     .override(
-                      //                       fontFamily: 'Inter',
-                      //                       fontSize: 10.0,
-                      //                       letterSpacing: 0.0,
-                      //                       fontWeight: FontWeight.w300,
-                      //                     ),
-                      //               ),
-                      //             ),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                      Text(
-                        'Date/Time',
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Inter',
-                              color: Color(0xFFFD642A),
-                              fontSize: 16.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                      Padding(
-                        padding: EdgeInsetsDirectional.fromSTEB(
-                            0.0, 10.0, 0.0, 10.0),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.max,
-                          children: [
-                            Expanded(
-                              child: Container(
-                                width: 200.0,
-                                child: TextFormField(
-                                  controller: _model.datetextController1,
-                                  focusNode: _model.textFieldFocusNode1,
-                                  autofocus: false,
-                                  obscureText: false,
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    labelText: 'Select Date',
-                                    labelStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          fontFamily: 'Inter',
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                    hintStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
-                                        .override(
-                                          fontFamily: 'Inter',
-                                          letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                    filled: true,
-                                    fillColor: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    suffixIcon: Icon(
-                                      Icons.calendar_today_outlined,
-                                    ),
-                                  ),
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Inter',
-                                        letterSpacing: 0.0,
-                                      ),
-                                  cursorColor: Colors.black,
-                                  onTap: () async {
-                                    DateTime? pickeddate = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime.now(),
-                                      lastDate: DateTime(2050),
-                                      builder: (context, child) {
-                                        return Theme(
-                                          data: Theme.of(context).copyWith(
-                                            colorScheme: ColorScheme.light(
-                                              primary: Color.fromARGB(255, 214,
-                                                  98, 35), // <-- SEE HERE
-                                              onPrimary:
-                                                  Colors.white, // <-- SEE HERE
-                                              onSurface:
-                                                  Colors.black, // <-- SEE HERE
-                                            ),
-                                            textButtonTheme:
-                                                TextButtonThemeData(
-                                              style: TextButton.styleFrom(
-                                                foregroundColor: Colors
-                                                    .orange, // button text color
-                                              ),
-                                            ),
-                                          ),
-                                          child: child!,
-                                        );
-                                      },
-                                    );
-                                    if (pickeddate != null) {
-                                      setState(() {
-                                        _model.datetextController1.text =
-                                            DateFormat('yyyy-MM-dd')
-                                                .format(pickeddate);
-                                      });
-                                    }
-                                  },
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return "Required";
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                  keyboardType: TextInputType.none,
-                                ),
+                        // Padding(
+                        //   padding:
+                        //       EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 10.0),
+                        //   child: Container(
+                        //     width: double.infinity,
+                        //     decoration: BoxDecoration(
+                        //       color: Color(0xFFF2F3F4),
+                        //     ),
+                        //     child: Padding(
+                        //       padding: EdgeInsetsDirectional.fromSTEB(
+                        //           10.0, 10.0, 10.0, 10.0),
+                        //       child: Row(
+                        //         mainAxisSize: MainAxisSize.max,
+                        //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        //         children: [
+                        //           Row(
+                        //             mainAxisSize: MainAxisSize.max,
+                        //             children: [
+                        //               Icon(
+                        //                 Icons.check_circle,
+                        //                 color: FlutterFlowTheme.of(context).success,
+                        //                 size: 24.0,
+                        //               ),
+                        //               Padding(
+                        //                 padding: EdgeInsetsDirectional.fromSTEB(
+                        //                     5.0, 0.0, 0.0, 0.0),
+                        //                 child: Text(
+                        //                   'Chandi Homam',
+                        //                   style: FlutterFlowTheme.of(context)
+                        //                       .bodyMedium
+                        //                       .override(
+                        //                         fontFamily: 'Inter',
+                        //                         fontSize: 16.0,
+                        //                         letterSpacing: 0.0,
+                        //                         fontWeight: FontWeight.normal,
+                        //                       ),
+                        //                 ),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //           Container(
+                        //             decoration: BoxDecoration(
+                        //               color: FlutterFlowTheme.of(context)
+                        //                   .secondaryBackground,
+                        //               borderRadius: BorderRadius.circular(24.0),
+                        //             ),
+                        //             child: Padding(
+                        //               padding: EdgeInsetsDirectional.fromSTEB(
+                        //                   15.0, 5.0, 15.0, 5.0),
+                        //               child: Text(
+                        //                 '800',
+                        //                 style: FlutterFlowTheme.of(context)
+                        //                     .bodyMedium
+                        //                     .override(
+                        //                       fontFamily: 'Inter',
+                        //                       fontSize: 10.0,
+                        //                       letterSpacing: 0.0,
+                        //                       fontWeight: FontWeight.w300,
+                        //                     ),
+                        //               ),
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
+                        Text(
+                          'Date/Time',
+                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                fontFamily: 'Inter',
+                                color: Color(0xFFFD642A),
+                                fontSize: 16.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              child: Container(
-                                width: 200.0,
-                                child: TextFormField(
-                                  controller: _model.timetextController2,
-                                  focusNode: _model.textFieldFocusNode2,
-                                  autofocus: false,
-                                  obscureText: false,
-                                  decoration: InputDecoration(
-                                    isDense: true,
-                                    labelText: 'Select Time',
-                                    labelStyle: FlutterFlowTheme.of(context)
-                                        .labelMedium
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(
+                              0.0, 10.0, 0.0, 10.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Expanded(
+                                child: SizedBox(
+                                  width: 200.0,
+                                  child: TextFormField(
+                                    controller: _model.datetextController1,
+                                    focusNode: _model.textFieldFocusNode1,
+                                    autofocus: false,
+                                    obscureText: false,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      labelText: 'Select Date',
+                                      labelStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .override(
+                                            fontFamily: 'Inter',
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                      hintStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .override(
+                                            fontFamily: 'Inter',
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                      filled: true,
+                                      fillColor: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      suffixIcon: Icon(
+                                        Icons.calendar_today_outlined,
+                                      ),
+                                    ),
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
                                         .override(
                                           fontFamily: 'Inter',
                                           letterSpacing: 0.0,
-                                          fontWeight: FontWeight.w300,
                                         ),
-                                    filled: true,
-                                    fillColor: FlutterFlowTheme.of(context)
-                                        .secondaryBackground,
-                                    suffixIcon: Icon(
-                                      Icons.access_time,
-                                    ),
-                                  ),
-                                  style: FlutterFlowTheme.of(context)
-                                      .bodyMedium
-                                      .override(
-                                        fontFamily: 'Inter',
-                                        letterSpacing: 0.0,
-                                      ),
-                                  cursorColor:
-                                      FlutterFlowTheme.of(context).primaryText,
-                                  onTap: () async {
-                                    TimeOfDay? pickedTime =
-                                        await showTimePicker(
-                                      context: context,
-                                      initialTime: TimeOfDay.now(),
-                                      builder: (BuildContext context,
-                                          Widget? child) {
-                                        return MediaQuery(
-                                          data: MediaQuery.of(context).copyWith(
-                                              alwaysUse24HourFormat: false),
-                                          child: Theme(
-                                            data: ThemeData.light().copyWith(
+                                    cursorColor: Colors.black,
+                                    onTap: () async {
+                                      DateTime? pickeddate = await showDatePicker(
+                                        context: context,
+                                        initialDate: DateTime.now(),
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime(2050),
+                                        builder: (context, child) {
+                                          return Theme(
+                                            data: Theme.of(context).copyWith(
                                               colorScheme: ColorScheme.light(
-                                                primary: Color.fromARGB(
-                                                    255, 214, 98, 35),
-                                                onSurface: Color.fromARGB(
-                                                    255, 214, 98, 35),
-                                                onSecondaryContainer:
-                                                    Color.fromARGB(
-                                                        255, 214, 98, 35),
+                                                primary: Color.fromARGB(255, 214,
+                                                    98, 35), // <-- SEE HERE
+                                                onPrimary:
+                                                    Colors.white, // <-- SEE HERE
+                                                onSurface:
+                                                    Colors.black, // <-- SEE HERE
                                               ),
-                                              buttonTheme: ButtonThemeData(
-                                                colorScheme: ColorScheme.light(
-                                                  primary: Color.fromARGB(
-                                                      255, 214, 98, 35),
+                                              textButtonTheme:
+                                                  TextButtonThemeData(
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor: Colors
+                                                      .orange, // button text color
                                                 ),
                                               ),
                                             ),
                                             child: child!,
-                                          ),
-                                        );
-                                      },
-                                    );
-
-                                    if (pickedTime != null) {
-                                      DateTime currentDate = DateTime.now();
-                                      DateTime selectedDateTime = DateTime(
-                                        currentDate.year,
-                                        currentDate.month,
-                                        currentDate.day,
-                                        pickedTime.hour,
-                                        pickedTime.minute,
-                                        1,
-                                        currentDate.millisecond,
+                                          );
+                                        },
                                       );
-
-                                      selectedTime = DateFormat('HH:mm')
-                                          .format(selectedDateTime);
-                                      print("object: $selectedTime");
-
-                                      _model.timetextController2.text =
-                                          "${pickedTime.hourOfPeriod.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')} ${pickedTime.period.index == 0 ? 'AM' : 'PM'}";
-                                    }
-                                  },
-                                  validator: (value) {
-                                    if (value!.isEmpty) {
-                                      return "Required";
-                                    } else {
-                                      return null;
-                                    }
-                                  },
-                                  keyboardType: TextInputType.none,
+                                      if (pickeddate != null) {
+                                        setState(() {
+                                          _model.datetextController1.text =
+                                              DateFormat('yyyy-MM-dd')
+                                                  .format(pickeddate);
+                                        });
+                                      }
+                                    },
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return "Required";
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    keyboardType: TextInputType.none,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        'Enter Address',
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Inter',
-                              color: Color(0xFFFD642A),
-                              fontSize: 16.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                        child: Container(
-                          width: double.infinity,
-                          child: TextFormField(
-                            controller: _model.address1textController3,
-                            focusNode: _model.textFieldFocusNode3,keyboardType: TextInputType.none,
-                            autofocus: false,
-                            obscureText: false,
-                            onTap: () {
-                              citybottomsheet(_model.address1textController3!);
-                            },
-                            // onChanged: (value) {
-                            //   if(value.length>=3){
-                            //     fetchSearchPredictions(value);
-                            //   }
-                            // },
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: 'Address Line 1',
-                              labelStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                              filled: true,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'Inter',
-                                  letterSpacing: 0.0,
-                                ),
-                            cursorColor:
-                                FlutterFlowTheme.of(context).primaryText,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Required";
-                              } else {
-                                return null;
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                        child: Container(
-                          width: double.infinity,
-                          child: TextFormField(
-                            controller: _model.address2textController4,
-                            focusNode: _model.textFieldFocusNode4,
-                            autofocus: false,
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: 'Address Line 2',
-                              labelStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                              filled: true,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'Inter',
-                                  letterSpacing: 0.0,
-                                ),
-                            cursorColor:
-                                FlutterFlowTheme.of(context).primaryText,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Required";
-                              } else {
-                                return null;
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding:
-                            EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
-                        child: Container(
-                          width: double.infinity,
-                          child: TextFormField(
-                            controller: _model.citytextController5,
-                            focusNode: _model.textFieldFocusNode5,
-                            autofocus: false,
-                            obscureText: false,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              labelText: 'City',
-                              labelStyle: FlutterFlowTheme.of(context)
-                                  .labelMedium
-                                  .override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                    fontWeight: FontWeight.w300,
-                                  ),
-                              filled: true,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
-                            ),
-                            style: FlutterFlowTheme.of(context)
-                                .bodyMedium
-                                .override(
-                                  fontFamily: 'Inter',
-                                  letterSpacing: 0.0,
-                                ),
-                            cursorColor:
-                                FlutterFlowTheme.of(context).primaryText,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "Required";
-                              } else {
-                                return null;
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        child: TextFormField(
-                          controller: _model.statetextController6,
-                          focusNode: _model.textFieldFocusNode6,
-                          autofocus: false,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            labelText: 'State',
-                            labelStyle: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  fontFamily: 'Inter',
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                            filled: true,
-                            fillColor: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                          ),
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                  ),
-                          cursorColor: FlutterFlowTheme.of(context).primaryText,
-                          validator: (value) {
-                            if (value!.isEmpty) {
-                              return "Required";
-                            } else {
-                              return null;
-                            }
-                          },
-                        ),
-                      ),
-                      FlutterFlowDropDown<String>(
-                        controller: _model.dropDownValueController ??=
-                            FormFieldController<String>(null),
-                        options: ['India', 'USA', 'Australia'],
-                        onChanged: (val) =>
-                            safeSetState(() => _model.dropDownValue = val),
-                        width: double.infinity,
-                        height: 40.0,
-                        textStyle:
-                            FlutterFlowTheme.of(context).bodyMedium.override(
-                                  fontFamily: 'Inter',
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                        hintText: _model.dropDownValue==null?'Select Country':_model.dropDownValue,
-                        icon: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: FlutterFlowTheme.of(context).secondaryText,
-                          size: 24.0,
-                        ),
-                        fillColor:
-                            FlutterFlowTheme.of(context).secondaryBackground,
-                        elevation: 2.0,
-                        borderColor: Colors.transparent,
-                        borderWidth: 0.0,
-                        borderRadius: 8.0,
-                        margin: EdgeInsetsDirectional.fromSTEB(
-                            12.0, 0.0, 12.0, 0.0),
-                        hidesUnderline: true,
-                        isOverButton: false,
-                        isSearchable: false,
-                        isMultiSelect: false,
-                      ),
-                      Text(
-                        'Add notes',
-                        style: FlutterFlowTheme.of(context).bodyMedium.override(
-                              fontFamily: 'Inter',
-                              color: Color(0xFFFD642A),
-                              fontSize: 16.0,
-                              letterSpacing: 0.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        child: TextFormField(
-                          controller: _model.textController7,
-                          focusNode: _model.textFieldFocusNode7,
-                          autofocus: false,
-                          obscureText: false,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            labelText: 'Add notes',
-                            labelStyle: FlutterFlowTheme.of(context)
-                                .labelMedium
-                                .override(
-                                  fontFamily: 'Inter',
-                                  letterSpacing: 0.0,
-                                  fontWeight: FontWeight.w300,
-                                ),
-                            filled: true,
-                            fillColor: FlutterFlowTheme.of(context)
-                                .secondaryBackground,
-                          ),
-                          style:
-                              FlutterFlowTheme.of(context).bodyMedium.override(
-                                    fontFamily: 'Inter',
-                                    letterSpacing: 0.0,
-                                  ),
-                          cursorColor: FlutterFlowTheme.of(context).primaryText,
-                          validator: _model.textController7Validator
-                              .asValidator(context),
-                        ),
-                      ),
-                      SizedBox(
-                        height: 10,
-                      ),
-                      FFButtonWidget(
-                        onPressed: () async {
-                          if (formkey.currentState!.validate()) {
-                            if (_model.dropDownValue == null) {
-                              Get.defaultDialog(
-                                title: "",
-                                titleStyle: TextStyle(color: Colors.red),
-                                content: Padding(
-                                  padding: const EdgeInsets.only(
-                                      left: 10, right: 10),
-                                  child: Text("Please select country",
-                                      style: TextStyle(color: Colors.black)),
-                                ),
-                                actions: [
-                                  MaterialButton(
-                                    color: Color.fromARGB(255, 255, 123, 0),
-                                    onPressed: () {
-                                      Get.back();
-                                    },
-                                    child: Text(
-                                      'ok',
-                                      style: TextStyle(
-                                        color: Colors.white,
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Expanded(
+                                child: SizedBox(
+                                  width: 200.0,
+                                  child: TextFormField(
+                                    controller: _model.timetextController2,
+                                    focusNode: _model.textFieldFocusNode2,
+                                    autofocus: false,
+                                    obscureText: false,
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      labelText: 'Select Time',
+                                      labelStyle: FlutterFlowTheme.of(context)
+                                          .labelMedium
+                                          .override(
+                                            fontFamily: 'Inter',
+                                            letterSpacing: 0.0,
+                                            fontWeight: FontWeight.w300,
+                                          ),
+                                      filled: true,
+                                      fillColor: FlutterFlowTheme.of(context)
+                                          .secondaryBackground,
+                                      suffixIcon: Icon(
+                                        Icons.access_time,
                                       ),
                                     ),
+                                    style: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'Inter',
+                                          letterSpacing: 0.0,
+                                        ),
+                                    cursorColor:
+                                        FlutterFlowTheme.of(context).primaryText,
+                                    onTap: () async {
+                                      TimeOfDay? pickedTime =
+                                          await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.now(),
+                                        builder: (BuildContext context,
+                                            Widget? child) {
+                                          return MediaQuery(
+                                            data: MediaQuery.of(context).copyWith(
+                                                alwaysUse24HourFormat: false),
+                                            child: Theme(
+                                              data: ThemeData.light().copyWith(
+                                                colorScheme: ColorScheme.light(
+                                                  primary: Color.fromARGB(
+                                                      255, 214, 98, 35),
+                                                  onSurface: Color.fromARGB(
+                                                      255, 214, 98, 35),
+                                                  onSecondaryContainer:
+                                                      Color.fromARGB(
+                                                          255, 214, 98, 35),
+                                                ),
+                                                buttonTheme: ButtonThemeData(
+                                                  colorScheme: ColorScheme.light(
+                                                    primary: Color.fromARGB(
+                                                        255, 214, 98, 35),
+                                                  ),
+                                                ),
+                                              ),
+                                              child: child!,
+                                            ),
+                                          );
+                                        },
+                                      );
+            
+                                      if (pickedTime != null) {
+                                        DateTime currentDate = DateTime.now();
+                                        DateTime selectedDateTime = DateTime(
+                                          currentDate.year,
+                                          currentDate.month,
+                                          currentDate.day,
+                                          pickedTime.hour,
+                                          pickedTime.minute,
+                                          1,
+                                          currentDate.millisecond,
+                                        );
+            
+                                        selectedTime = DateFormat('HH:mm')
+                                            .format(selectedDateTime);
+                                        print("object: $selectedTime");
+            
+                                        _model.timetextController2.text =
+                                            "${pickedTime.hourOfPeriod.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')} ${pickedTime.period.index == 0 ? 'AM' : 'PM'}";
+                                      }
+                                    },
+                                    validator: (value) {
+                                      if (value!.isEmpty) {
+                                        return "Required";
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    keyboardType: TextInputType.none,
                                   ),
-                                ],
-                              );
-                            } else {
-                              if (loader = true) {
-                                List service_id = [];
-                                for (int n = 0; n < data[0].length; n++) {
-                                  service_id.add(data[0][n]['id']);
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          'Enter Address',
+                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                fontFamily: 'Inter',
+                                color: Color(0xFFFD642A),
+                                fontSize: 16.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        // Padding(
+                        //   padding:
+                        //       EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                        //   child: SizedBox(
+                        //     width: double.infinity,
+                        //     child: TextFormField(
+                        //       controller: _model.flatnoandaptnameController8,
+                        //       focusNode: _model.textFieldFocusNode8,
+                        //       keyboardType: TextInputType.none,
+                        //       autofocus: false,
+                        //       obscureText: false,
+                        //       // onTap: () {
+                        //       //   citybottomsheet(_model.flatnoandaptnameController8!);
+                        //       // },
+                        //       // onChanged: (value) {
+                        //       //   if(value.length>=3){
+                        //       //     fetchSearchPredictions(value);
+                        //       //   }
+                        //       // },
+                              
+                        //       decoration: InputDecoration(
+                        //         // suffixIcon: Icon(Icons.search),
+                        //         isDense: true,
+                        //         labelText: 'Flat-no/House-no and Apartment name',
+                        //         labelStyle: FlutterFlowTheme.of(context)
+                        //             .labelMedium
+                        //             .override(
+                        //               fontFamily: 'Inter',
+                        //               letterSpacing: 0.0,
+                        //               fontWeight: FontWeight.w300,
+                        //             ),
+                        //         filled: true,
+                        //         fillColor: FlutterFlowTheme.of(context)
+                        //             .secondaryBackground,
+                        //       ),
+                        //       style: FlutterFlowTheme.of(context)
+                        //           .bodyMedium
+                        //           .override(
+                        //             fontFamily: 'Inter',
+                        //             letterSpacing: 0.0,
+                        //           ),
+                        //       cursorColor:
+                        //           FlutterFlowTheme.of(context).primaryText,
+                        //       validator: (value) {
+                        //         if (value!.isEmpty) {
+                        //           return "Required";
+                        //         } else {
+                        //           return null;
+                        //         }
+                        //       },
+                        //     ),
+                        //   ),
+                        // ),
+                          Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: TextFormField(
+                              controller: _model.address2textController4,
+                              focusNode: _model.textFieldFocusNode4,
+                              autofocus: false,
+                              obscureText: false,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                labelText: 'Flat no/House no, apartment name',
+                                labelStyle: FlutterFlowTheme.of(context)
+                                    .labelMedium
+                                    .override(
+                                      fontFamily: 'Inter',
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                filled: true,
+                                fillColor: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                              ),
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                  ),
+                              cursorColor:
+                                  FlutterFlowTheme.of(context).primaryText,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Required";
+                                } else {
+                                  return null;
                                 }
-                                print("Service ids = $service_id");
-                                if (service_id.length > 0) {
-                                  userbooking(
-                                      _model.datetextController1.text,
-                                      selectedTime,
-                                      data[1]['priestId'],
-                                      service_id,
-                                      _model.address1textController3.text +
-                                          _model.address2textController4.text +
-                                          _model.citytextController5.text +
-                                          _model.statetextController6.text +
-                                          _model.dropDownValue.toString());
+                              },
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: TextFormField(
+                              controller: _model.address1textController3,
+                              focusNode: _model.textFieldFocusNode3,
+                              keyboardType: TextInputType.none,
+                              autofocus: false,
+                              obscureText: false,
+                              onTap: () {
+                                citybottomsheet(_model.address1textController3!);
+                              },
+                              // onChanged: (value) {
+                              //   if(value.length>=3){
+                              //     fetchSearchPredictions(value);
+                              //   }
+                              // },
+                              
+                              decoration: InputDecoration(
+                                suffixIcon: Icon(Icons.search),
+                                isDense: true,
+                                labelText: 'Address Line 2',
+                                labelStyle: FlutterFlowTheme.of(context)
+                                    .labelMedium
+                                    .override(
+                                      fontFamily: 'Inter',
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                filled: true,
+                                fillColor: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                              ),
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                  ),
+                              cursorColor:
+                                  FlutterFlowTheme.of(context).primaryText,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Required";
+                                } else {
+                                  return null;
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      
+                        Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(0.0, 10.0, 0.0, 0.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: TextFormField(
+                              controller: _model.citytextController5,
+                              focusNode: _model.textFieldFocusNode5,
+                              autofocus: false,
+                              obscureText: false,
+                              decoration: InputDecoration(
+                                isDense: true,
+                                labelText: 'City',
+                                labelStyle: FlutterFlowTheme.of(context)
+                                    .labelMedium
+                                    .override(
+                                      fontFamily: 'Inter',
+                                      letterSpacing: 0.0,
+                                      fontWeight: FontWeight.w300,
+                                    ),
+                                filled: true,
+                                fillColor: FlutterFlowTheme.of(context)
+                                    .secondaryBackground,
+                              ),
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyMedium
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                  ),
+                              cursorColor:
+                                  FlutterFlowTheme.of(context).primaryText,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return "Required";
+                                } else {
+                                  return null;
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextFormField(
+                            controller: _model.statetextController6,
+                            focusNode: _model.textFieldFocusNode6,
+                            autofocus: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: 'State',
+                              labelStyle: FlutterFlowTheme.of(context)
+                                  .labelMedium
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                              filled: true,
+                              fillColor: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                            ),
+                            style:
+                                FlutterFlowTheme.of(context).bodyMedium.override(
+                                      fontFamily: 'Inter',
+                                      letterSpacing: 0.0,
+                                    ),
+                            cursorColor: FlutterFlowTheme.of(context).primaryText,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Required";
+                              } else {
+                                return null;
+                              }
+                            },
+                          ),
+                        ),
+                        FlutterFlowDropDown<String>(
+                          controller: _model.dropDownValueController ??=
+                              FormFieldController<String>(null),
+                          options: ['India', 'USA', 'Australia'],
+                          onChanged: (val) =>
+                              safeSetState(() => _model.dropDownValue = val),
+                          width: double.infinity,
+                          height: 40.0,
+                          textStyle:
+                              FlutterFlowTheme.of(context).bodyMedium.override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                          hintText: _model.dropDownValue ?? 'Select Country',
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: FlutterFlowTheme.of(context).secondaryText,
+                            size: 24.0,
+                          ),
+                          fillColor:
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                          elevation: 2.0,
+                          borderColor: Colors.transparent,
+                          borderWidth: 0.0,
+                          borderRadius: 8.0,
+                          margin: EdgeInsetsDirectional.fromSTEB(
+                              12.0, 0.0, 12.0, 0.0),
+                          hidesUnderline: true,
+                          isOverButton: false,
+                          isSearchable: false,
+                          isMultiSelect: false,
+                        ),
+                        Text(
+                          'Add notes',
+                          style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                fontFamily: 'Inter',
+                                color: Color(0xFFFD642A),
+                                fontSize: 16.0,
+                                letterSpacing: 0.0,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextFormField(
+                            controller: _model.textController7,
+                            focusNode: _model.textFieldFocusNode7,
+                            autofocus: false,
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              labelText: 'Add notes',
+                              labelStyle: FlutterFlowTheme.of(context)
+                                  .labelMedium
+                                  .override(
+                                    fontFamily: 'Inter',
+                                    letterSpacing: 0.0,
+                                    fontWeight: FontWeight.w300,
+                                  ),
+                              filled: true,
+                              fillColor: FlutterFlowTheme.of(context)
+                                  .secondaryBackground,
+                            ),
+                            style:
+                                FlutterFlowTheme.of(context).bodyMedium.override(
+                                      fontFamily: 'Inter',
+                                      letterSpacing: 0.0,
+                                    ),
+                            cursorColor: FlutterFlowTheme.of(context).primaryText,
+                            validator: _model.textController7Validator
+                                .asValidator(context),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        FFButtonWidget(
+                          onPressed: () async {
+                            
+                            if (formkey.currentState!.validate()) {
+                              if (_model.dropDownValue == null) {
+                                Get.defaultDialog(
+                                  title: "",
+                                  titleStyle: TextStyle(color: Colors.red),
+                                  content: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 10, right: 10),
+                                    child: Text("Please select country",
+                                        style: TextStyle(color: Colors.black)),
+                                  ),
+                                  actions: [
+                                    MaterialButton(
+                                      color: Color.fromARGB(255, 255, 123, 0),
+                                      onPressed: () {
+                                        Get.back();
+                                      },
+                                      child: Text(
+                                        'ok',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                if (loader = true) {
+                                  List serviceId = [];
+                                  setState(() {
+                                    for (int n = 0;
+                                      n < priestandservicedata[0].length;
+                                      n++) {
+                                       servicename=servicename+"${servicename.isEmpty?'':','}"+priestandservicedata[0][n]['name'];
+                                    serviceId
+                                        .add(priestandservicedata[0][n]['id']);
+                                  }
+                                  });
+                                  
+                                  print("Service ids = $serviceId");
+                                  if (serviceId.length > 0) {
+                                    userbooking(
+                                        _model.datetextController1.text,
+                                        selectedTime,
+                                        priestandservicedata[1]['priestId'],
+                                        serviceId,
+                                       
+                                            _model.address2textController4.text +
+                                             _model.address1textController3.text +
+                                            _model.citytextController5.text +
+                                            _model.statetextController6.text +
+                                            _model.dropDownValue.toString());
+                                  }
                                 }
                               }
                             }
-                          }
-
-                          //     Navigator.push(context,
-                          // MaterialPageRoute(builder: (context) => SuccessWidget()));
-                        },
-                        text: 'Continue',
-                        options: FFButtonOptions(
-                          width: double.infinity,
-                          padding: EdgeInsetsDirectional.fromSTEB(
-                              16.0, 25.0, 16.0, 25.0),
-                          iconPadding: EdgeInsetsDirectional.fromSTEB(
-                              0.0, 0.0, 0.0, 0.0),
-                          color: Color(0xFFFFF6EA),
-                          textStyle:
-                              FlutterFlowTheme.of(context).titleSmall.override(
-                                    fontFamily: 'Inter Tight',
-                                    color: Color(0xFFD66223),
-                                    letterSpacing: 0.0,
-                                  ),
-                          elevation: 0.0,
-                          borderSide: BorderSide(
-                            color: Color(0xFFD66223),
-                            width: 2.0,
+            
+                            //     Navigator.push(context,
+                            // MaterialPageRoute(builder: (context) => SuccessWidget()));
+                          },
+                          text: 'Continue',
+                          options: FFButtonOptions(
+                            width: double.infinity,
+                            padding: EdgeInsetsDirectional.fromSTEB(
+                                16.0, 25.0, 16.0, 25.0),
+                            iconPadding: EdgeInsetsDirectional.fromSTEB(
+                                0.0, 0.0, 0.0, 0.0),
+                            color: Color(0xFFFFF6EA),
+                            textStyle:
+                                FlutterFlowTheme.of(context).titleSmall.override(
+                                      fontFamily: 'Inter Tight',
+                                      color: Color(0xFFD66223),
+                                      letterSpacing: 0.0,
+                                    ),
+                            elevation: 0.0,
+                            borderSide: BorderSide(
+                              color: Color(0xFFD66223),
+                              width: 2.0,
+                            ),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
-                          borderRadius: BorderRadius.circular(8.0),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

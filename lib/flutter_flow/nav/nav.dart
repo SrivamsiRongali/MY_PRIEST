@@ -46,37 +46,37 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'HomePage',
           path: '/homePage',
-          builder: (context, params) => HomePageWidget(),
+          builder: (context, params) => const HomePageWidget(),
         ),
         FFRoute(
           name: 'Services',
           path: '/services',
-          builder: (context, params) => ServicesWidget(),
+          builder: (context, params) => const ServicesWidget(),
         ),
         FFRoute(
           name: 'Priests',
           path: '/priests',
-          builder: (context, params) => PriestsWidget(),
+          builder: (context, params) => const PriestsWidget(),
         ),
         FFRoute(
           name: 'Poojas',
           path: '/poojas',
-          builder: (context, params) => PoojasWidget(),
+          builder: (context, params) => const PoojasWidget(),
         ),
         FFRoute(
           name: 'Success',
           path: '/success',
-          builder: (context, params) => SuccessWidget(),
+          builder: (context, params) => const SuccessWidget(),
         ),
         FFRoute(
           name: 'Payment',
           path: '/payment',
-          builder: (context, params) => PaymentWidget(),
+          builder: (context, params) => const PaymentWidget(),
         ),
         FFRoute(
           name: 'Confirmation',
           path: '/confirmation',
-          builder: (context, params) => ConfirmationWidget(),
+          builder: (context, params) => const ConfirmationWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
     );
@@ -240,7 +240,7 @@ class TransitionInfo {
   final Duration duration;
   final Alignment? alignment;
 
-  static TransitionInfo appDefault() => TransitionInfo(hasTransition: false);
+  static TransitionInfo appDefault() => const TransitionInfo(hasTransition: false);
 }
 
 class RootPageContext {

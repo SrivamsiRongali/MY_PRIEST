@@ -1,6 +1,7 @@
 import 'package:bottom_navbar_with_indicator/bottom_navbar_with_indicator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -19,6 +20,7 @@ import 'pages/my_bookings/booking_details_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
 
@@ -28,6 +30,8 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
@@ -86,7 +90,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class NavBarPage extends StatefulWidget {
-  NavBarPage({Key? key, this.initialPage, this.page}) : super(key: key);
+  const NavBarPage({super.key, this.initialPage, this.page});
 
   final String? initialPage;
   final Widget? page;
@@ -137,10 +141,10 @@ class _NavBarPageState extends State<NavBarPage> {
         body: IndexedStack(
           index: currentindex,
           children: [
-            HomePageWidget(),
-            ServicesWidget(),
-            TemplesWidget(),
-            myaccount(),
+            const HomePageWidget(),
+            const ServicesWidget(),
+            const TemplesWidget(),
+            const myaccount(),
           ],
         ),
         bottomNavigationBar:
@@ -149,7 +153,7 @@ class _NavBarPageState extends State<NavBarPage> {
           selectedColor: Colors.white,
           splashColor: Colors.white,
           unSelectedColor: Colors.white,
-          backgroundColor:Color.fromARGB(255, 214, 98, 35),
+          backgroundColor:const Color.fromARGB(255, 214, 98, 35),
           currentIndex: currentindex,
           unselectedIconSize: 20,
           selectedIconSize: 20,

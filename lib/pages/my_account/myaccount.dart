@@ -45,7 +45,7 @@ class _myaccountState extends State<myaccount> {
     var images = sharedPreferences.getString("image");
 
     setState(() {
-      image = images==null?null: File(images!);
+      image = images==null?null: File(images);
     });
   }
 
@@ -70,10 +70,10 @@ class _myaccountState extends State<myaccount> {
       mapresponse = json.decode(response1.body);
 
       sharedPreferences.setString("name",
-          "${mapresponse["firstName"]==""? "":mapresponse["firstName"]=="string"?"":mapresponse["firstName"]} ${mapresponse["middleName"]==""? "":mapresponse["middleName"]=="string"?"":mapresponse["middleName"]} ${mapresponse["lastName"]==""? "":mapresponse["lastName"]=="string"?"":mapresponse["lastName"]}");
+          "${mapresponse["firstName"]==""? "":mapresponse["firstName"]=="string"?"":mapresponse["firstName"]} ${mapresponse["lastName"]==""? "":mapresponse["lastName"]=="string"?"":mapresponse["lastName"]}");
       setState(() {
         name =
-            "${mapresponse["firstName"]==""? "":mapresponse["firstName"]=="string"?"":mapresponse["firstName"]} ${mapresponse["middleName"]==""? "":mapresponse["middleName"]=="string"?"":mapresponse["middleName"]} ${mapresponse["lastName"]==""? "":mapresponse["lastName"]=="string"?"":mapresponse["lastName"]}";
+            "${mapresponse["firstName"]==""? "":mapresponse["firstName"]=="string"?"":mapresponse["firstName"]} ${mapresponse["lastName"]==""? "":mapresponse["lastName"]=="string"?"":mapresponse["lastName"]}";
       });
 
       print(mapresponse);
@@ -117,28 +117,7 @@ class _myaccountState extends State<myaccount> {
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            actions: [
-              Align(
-                alignment: AlignmentDirectional(-1.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-                  child: FlutterFlowIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 8.0,
-                    buttonSize: 40.0,
-                    fillColor: Color(0x00FFFFFF),
-                    icon: Icon(
-                      Icons.menu,
-                      color: Color(0xFF1E2022),
-                      size: 30.0,
-                    ),
-                    onPressed: () {
-                      print('IconButton pressed ...');
-                    },
-                  ),
-                ),
-              ),
-            ],
+         
             centerTitle: true,
             elevation: 0.0,
           ),
@@ -190,9 +169,9 @@ class _myaccountState extends State<myaccount> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Get.to(()=>mybookings());
+                      Get.to(()=>mybookings(),arguments: false);
                     },
-                    child: Container(
+                    child: SizedBox(
                       height: screenheight * 0.075,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -200,7 +179,7 @@ class _myaccountState extends State<myaccount> {
                         children: [
                           TextButton(
                             onPressed: () {
-                               Get.to(()=>mybookings());
+                               Get.to(()=>mybookings(),arguments: false);
                             },
                             child: Text(
                               'My Bookings',
@@ -210,7 +189,7 @@ class _myaccountState extends State<myaccount> {
                             ),
                           ),
                           IconButton(
-                              onPressed: () {Get.to(()=>mybookings());},
+                              onPressed: () {Get.to(()=>mybookings(),arguments: false);},
                               icon: Icon(
                                 Icons.arrow_forward_ios,
                                 color: Colors.black,
@@ -228,7 +207,7 @@ class _myaccountState extends State<myaccount> {
                     onTap: () {
                       Get.to(()=>Accountwidget());
                     },
-                    child: Container(
+                    child: SizedBox(
                       height: screenheight * 0.075,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

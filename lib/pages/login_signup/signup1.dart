@@ -7,6 +7,8 @@ import 'package:get/get.dart';
 import 'signup2.dart';
 
 class signup1 extends StatefulWidget {
+  const signup1({super.key});
+
   @override
   State<signup1> createState() => _signup1State();
 }
@@ -53,7 +55,7 @@ class _signup1State extends State<signup1> {
         ),
         body: Container(
           height: screenheight,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
               gradient: LinearGradient(colors: [
             Color.fromARGB(255, 255, 201, 5),
             Color.fromARGB(255, 253, 98, 42)
@@ -63,12 +65,12 @@ class _signup1State extends State<signup1> {
             child: Stack(children: [
               Align(
                   alignment: Alignment.topCenter,
-                  child: Container(
+                  child: SizedBox(
                       height: screenheight * 0.18,
                       child: Image.asset('images/Asset 2@4x 1 (2).png'))),
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 95, 8, 0),
-                child: Container(
+                child: SizedBox(
                   height: screenheight * 0.88239,
                   child: SvgPicture.asset(
                     'images/Vector (2).svg',
@@ -83,7 +85,7 @@ class _signup1State extends State<signup1> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(25.0),
-                        child: Container(
+                        child: SizedBox(
                           height: screenheight * 0.1,
                           child: SvgPicture.asset(
                               'images/Priest Services Logo SVG.svg'),
@@ -146,7 +148,7 @@ class _signup1State extends State<signup1> {
                           showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
-                                    title: Text('Coming Soon'),
+                                    title: const Text('Coming Soon'),
                                     actions: [
                                       MaterialButton(
                                         onPressed: () {
@@ -156,7 +158,7 @@ class _signup1State extends State<signup1> {
                                                   builder: (context) =>
                                                       signup1()));
                                         },
-                                        child: Text('OK'),
+                                        child: const Text('OK'),
                                       )
                                     ],
                                   ));
@@ -188,7 +190,7 @@ class _signup1State extends State<signup1> {
                           showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
-                                    title: Text('Coming Soon'),
+                                    title: const Text('Coming Soon'),
                                     actions: [
                                       MaterialButton(
                                         onPressed: () {
@@ -198,7 +200,7 @@ class _signup1State extends State<signup1> {
                                                   builder: (context) =>
                                                       signup1()));
                                         },
-                                        child: Text('OK'),
+                                        child: const Text('OK'),
                                       )
                                     ],
                                   ));

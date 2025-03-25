@@ -9,6 +9,8 @@ import '../main.dart';
 import 'login_signup/signin.dart';
 
 class splash extends StatefulWidget {
+  const splash({super.key});
+
   @override
   State<splash> createState() => _splashState();
 }
@@ -27,7 +29,7 @@ class _splashState extends State<splash> {
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
     var flo = sharedPreferences.getBool("flow");
-    flow = flo == null ? false : flo;
+    flow = flo ?? false;
     // ignore: use_build_context_synchronously
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
       if (flow == false) {
@@ -46,11 +48,11 @@ class _splashState extends State<splash> {
       body: Center(
         child: Container(
           height: screenheight * 1,
+          constraints: BoxConstraints.tightForFinite(width: 1000),
           child: Image.asset(
             'images/Frame (5).png',
             fit: BoxFit.fill,
           ),
-          constraints: BoxConstraints.tightForFinite(width: 1000),
         ),
       ),
     );

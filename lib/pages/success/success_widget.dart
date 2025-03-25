@@ -51,14 +51,14 @@ class _SuccessWidgetState extends State<SuccessWidget> {
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
           appBar: AppBar(
-            backgroundColor: Color(0xFFFFF7EA),
+            backgroundColor: const Color(0xFFFFF7EA),
             automaticallyImplyLeading: false,
             leading: FlutterFlowIconButton(
               borderColor: Colors.transparent,
               borderRadius: 30.0,
               borderWidth: 1.0,
               buttonSize: 60.0,
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_back_ios,
                 color: Color(0xFF1E2022),
                 size: 30.0,
@@ -71,34 +71,13 @@ class _SuccessWidgetState extends State<SuccessWidget> {
               'Success',
               style: FlutterFlowTheme.of(context).bodyMedium.override(
                     fontFamily: 'Inter',
-                    color: Color(0xFF1E2022),
+                    color: const Color(0xFF1E2022),
                     fontSize: 22.0,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            actions: [
-              Align(
-                alignment: AlignmentDirectional(-1.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-                  child: FlutterFlowIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 8.0,
-                    buttonSize: 40.0,
-                    fillColor: Color(0x00FFFFFF),
-                    icon: Icon(
-                      Icons.menu,
-                      color: Color(0xFF1E2022),
-                      size: 30.0,
-                    ),
-                    onPressed: () {
-                      print('IconButton pressed ...');
-                    },
-                  ),
-                ),
-              ),
-            ],
+           
             centerTitle: true,
             elevation: 0.0,
           ),
@@ -106,14 +85,14 @@ class _SuccessWidgetState extends State<SuccessWidget> {
             top: true,
             child: Container(
               width: double.infinity,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 0.0, 40.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 80.0, 0.0, 40.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8.0),
                       child: Image.asset(
@@ -125,7 +104,7 @@ class _SuccessWidgetState extends State<SuccessWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 12.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 12.0),
                     child: Text(
                       'Thank you!',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
@@ -137,9 +116,9 @@ class _SuccessWidgetState extends State<SuccessWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 20.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 20.0),
                     child: Text(
-                      'Your request has been received. Please check your email to complete the payment and confirm your booking.',
+                      'Order placed successfully.',
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Inter',
                             letterSpacing: 0.0,
@@ -160,22 +139,22 @@ class _SuccessWidgetState extends State<SuccessWidget> {
                   // ),
                   FFButtonWidget(
                     onPressed: () {
-                     Get.offAll(mybookings());
+                     Get.offAll(const mybookings(),arguments: true);
                     },
                     text: 'Orders',
                     options: FFButtonOptions(
                       padding:
-                          EdgeInsetsDirectional.fromSTEB(50.0, 25.0, 50.0, 25.0),
+                          const EdgeInsetsDirectional.fromSTEB(50.0, 25.0, 50.0, 25.0),
                       iconPadding:
-                          EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-                      color: Color(0xFFFFF6EA),
+                          const EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
+                      color: const Color(0xFFFFF6EA),
                       textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                             fontFamily: 'Inter Tight',
-                            color: Color(0xFFD66223),
+                            color: const Color(0xFFD66223),
                             letterSpacing: 0.0,
                           ),
                       elevation: 0.0,
-                      borderSide: BorderSide(
+                      borderSide: const BorderSide(
                         color: Color(0xFFD66223),
                         width: 2.0,
                       ),

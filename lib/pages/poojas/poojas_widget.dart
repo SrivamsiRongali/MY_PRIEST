@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:my_priest/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -49,8 +50,11 @@ class _PoojasWidgetState extends State<PoojasWidget> {
 
   List<priestList> ServicesList = List.empty(growable: true);
   List Selected_ServicesList = List.empty(growable: true);
-  Map? mapresponse = null;
+  Map? mapresponse;
   Future _apicall() async {
+    setState(() {
+      loader = true;
+    });
     final SharedPreferences sharedPreferences =
         await SharedPreferences.getInstance();
     var token = sharedPreferences.getString("token");
@@ -69,6 +73,8 @@ class _PoojasWidgetState extends State<PoojasWidget> {
       print('successful');
       mapresponse = json.decode(response1.body);
       setState(() {
+        loader = false;
+        ServicesList = [];
         for (int n = 0; n < mapresponse!['data'].length; n++) {
           ServicesList.add(priestList(
               Priestobject: mapresponse!['data'][n], selected: false));
@@ -77,11 +83,57 @@ class _PoojasWidgetState extends State<PoojasWidget> {
 
       return mapresponse;
     } else {
+      setState(() {
+        loader = false;
+      });
       print('fetch unsuccessful');
       print(response1.body);
     }
   }
 
+  Future _searchapicall(String search) async {
+    setState(() {
+      loader = true;
+    });
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    var token = sharedPreferences.getString("token");
+    var priestid = sharedPreferences.getInt("priest_id");
+    http.Response response1;
+    response1 = await http.get(
+      Uri.parse(
+          "https://${AppConstants.ipaddress.ipaddress}/api/services?pageIndex=0&pageSize=20&search=$search&sortBy=id&sortOrder=DESC&status=1"),
+      headers: {
+        "accept": "*/*",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+    );
+    if (response1.statusCode == 200) {
+      print('successful');
+      mapresponse = json.decode(response1.body);
+
+      setState(() {
+        loader = false;
+        ServicesList = [];
+        for (int n = 0; n < mapresponse!['data'].length; n++) {
+          ServicesList.add(priestList(
+              Priestobject: mapresponse!['data'][n], selected: false));
+        }
+      });
+
+      return mapresponse;
+    } else {
+      setState(() {
+        loader = false;
+      });
+      print('fetch unsuccessful');
+      print(response1.body);
+    }
+  }
+
+  bool loader = false;
+  TextEditingController searchcontroller = TextEditingController();
   @override
   Widget build(BuildContext context) {
     final screensize = MediaQuery.of(context).size;
@@ -107,11 +159,11 @@ class _PoojasWidgetState extends State<PoojasWidget> {
               FloatingActionButtonLocation.centerFloat,
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
-              if (Selected_ServicesList.length>0) {
-                Get.to(PriestsWidget(), arguments: Selected_ServicesList);
+              if (Selected_ServicesList.isNotEmpty) {
+                Get.to(const PriestsWidget(), arguments: Selected_ServicesList);
               }
             },
-            label: Container(
+            label: SizedBox(
               width: screensize.width * 0.8,
               child: Align(
                 alignment: Alignment.center,
@@ -119,35 +171,35 @@ class _PoojasWidgetState extends State<PoojasWidget> {
                   'Continue',
                   style: FlutterFlowTheme.of(context).titleLarge.override(
                         fontFamily: 'Inter Tight',
-                        color: Selected_ServicesList.length == 0
-                            ? Color.fromARGB(255, 209, 209, 209)
-                            : Color(0xFFD66223),
+                        color: Selected_ServicesList.isEmpty
+                            ? const Color.fromARGB(255, 209, 209, 209)
+                            : const Color(0xFFD66223),
                         fontSize: 16.0,
                         letterSpacing: 0.0,
                       ),
                 ),
               ),
             ),
-            backgroundColor: Color(0xFFFFF6EA),
+            backgroundColor: const Color(0xFFFFF6EA),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(
                     width: 2,
-                    color: Selected_ServicesList.length == 0
-                        ? Color.fromARGB(255, 209, 209, 209)
-                        : Color(0xFFD66223))),
+                    color: Selected_ServicesList.isEmpty
+                        ? const Color.fromARGB(255, 209, 209, 209)
+                        : const Color(0xFFD66223))),
           ),
           key: scaffoldKey,
           backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Color(0xFFFFF7EA),
+            backgroundColor: const Color(0xFFFFF7EA),
             automaticallyImplyLeading: false,
             leading: FlutterFlowIconButton(
               borderColor: Colors.transparent,
               borderRadius: 30.0,
               borderWidth: 1.0,
               buttonSize: 60.0,
-              icon: Icon(
+              icon: const Icon(
                 Icons.arrow_back_ios,
                 color: Color(0xFF1E2022),
                 size: 30.0,
@@ -160,220 +212,313 @@ class _PoojasWidgetState extends State<PoojasWidget> {
               'Poojas',
               style: FlutterFlowTheme.of(context).headlineMedium.override(
                     fontFamily: 'Inter Tight',
-                    color: Color(0xFF1E2022),
+                    color: const Color(0xFF1E2022),
                     fontSize: 22.0,
                     letterSpacing: 0.0,
                     fontWeight: FontWeight.w500,
                   ),
             ),
-            actions: [
-              Align(
-                alignment: AlignmentDirectional(-1.0, 0.0),
-                child: Padding(
-                  padding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 10.0, 0.0),
-                  child: FlutterFlowIconButton(
-                    borderColor: Colors.transparent,
-                    borderRadius: 8.0,
-                    buttonSize: 40.0,
-                    fillColor: Color(0x00FFFFFF),
-                    icon: Icon(
-                      Icons.menu,
-                      color: Color(0xFF1E2022),
-                      size: 30.0,
-                    ),
-                    onPressed: () {
-                      print('IconButton pressed ...');
-                    },
-                  ),
-                ),
-              ),
-            ],
             centerTitle: true,
             elevation: 0.0,
           ),
-          body: Container(
-            height: remainingHeight,
-            child: SingleChildScrollView(
-              child: ListView.builder(
-                padding: EdgeInsetsDirectional.fromSTEB(10.0, 10.0, 10.0, 60.0),
-                shrinkWrap: true,
-                physics: BouncingScrollPhysics(),
-                itemCount: ServicesList.length,
-                itemBuilder: (BuildContext context, int index) => Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: Container(
-                    width: double.infinity,
-                    height: screensize.height * 0.13,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 4.0,
-                          color: Color(0x33000000),
-                          offset: Offset(
-                            0.0,
-                            2.0,
+          body: ModalProgressHUD(
+            inAsyncCall: loader,
+            progressIndicator: const CircularProgressIndicator(
+              color: Color.fromARGB(255, 214, 98, 35),
+            ),
+            child: SizedBox(
+              height: remainingHeight,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      color: const Color(0xFFFFF7EA),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            10.0, 10.0, 10.0, 10.0),
+                        child: TextFormField(
+                          cursorColor: Colors.black,
+                          controller: searchcontroller,
+                          keyboardType: TextInputType.visiblePassword,
+                          onChanged: (value) {
+                            if (value.length >= 3) {
+                              _searchapicall(value);
+                            } else {
+                              _apicall();
+                            }
+                          },
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            labelText: "Search Pooja",
+                            labelStyle: const TextStyle(
+                                color: Color.fromARGB(255, 204, 204, 204)),
+                            // hintText: "Password",
+                            // hintStyle: TextStyle(fontWeight: FontWeight.bold),
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: const BorderSide(
+                                    color: Colors.transparent, width: 2)),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: const BorderSide(
+                                    color: Colors.white, width: 2)),
+                            focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5),
+                                borderSide: const BorderSide(
+                                    color: Colors.transparent, width: 0)),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Color.fromARGB(255, 204, 204, 204),
+                            ),
                           ),
-                        )
-                      ],
-                      borderRadius: BorderRadius.circular(8.0),
+                          maxLines: 1,
+                        ),
+                      ),
                     ),
-                    child: Padding(
-                      padding: EdgeInsetsDirectional.fromSTEB(
-                          10.0, 10.0, 10.0, 10.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.max,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(20.0),
-                                child: Image.asset(
-                                  'assets/images/poojas_placeholder.png',
-                                  width: 80.0,
-                                  fit: BoxFit.fill,
-                                  alignment: Alignment(0.0, 0.0),
+                    ServicesList.length == 0
+                        ? loader
+                            ? Container()
+                            : Container(
+                                height: 200,
+                                child: const Center(
+                                  child: Text(
+                                      "No services are available at the moment"),
                                 ),
-                              ),
-                              Padding(
-                                padding: EdgeInsetsDirectional.fromSTEB(
-                                    10.0, 0.0, 0.0, 0.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Align(
-                                      alignment:
-                                          AlignmentDirectional(-1.0, 0.0),
-                                      child: Padding(
-                                        padding: EdgeInsetsDirectional.fromSTEB(
-                                            0.0, 0.0, 0.0, 0.0),
-                                        child: Container(
-                                          width: screensize.width * 0.63,
-                                          child: Text(
-                                            ServicesList[index]
-                                                .Priestobject['name'],
-                                            textAlign: TextAlign.start,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  color: Colors.black,
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 16.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                          ),
-                                        ),
+                              )
+                        : ListView.builder(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                10.0, 10.0, 10.0, 60.0),
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: ServicesList.length,
+                            itemBuilder: (BuildContext context, int index) =>
+                                Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: Container(
+                                // width: double.infinity,
+                                height: screensize.height * 0.11,
+
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    const BoxShadow(
+                                      blurRadius: 4.0,
+                                      color: Color(0x33000000),
+                                      offset: Offset(
+                                        0.0,
+                                        2.0,
                                       ),
-                                    ),
-                                    Container(
-                                      width: screensize.width * 0.63,
-                                      child: Row(
+                                    )
+                                  ],
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsetsDirectional.fromSTEB(
+                                      10.0, 10.0, 10.0, 10.0),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.max,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        mainAxisSize: MainAxisSize.max,
                                         mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
                                         children: [
-                                          FFButtonWidget(
-                                            onPressed: () {
-                                              setState(() {
-                                                ServicesList[index].selected =
-                                                    !ServicesList[index]
-                                                        .selected;
-                                                if (Selected_ServicesList
-                                                        .length >
-                                                    0) {
-                                                  print("---0");
-                                                  if (ServicesList[index]
-                                                          .selected ==
-                                                      false) {
-                                                    print("-----0");
-                                                    for (int n = 0;
-                                                        n <
-                                                            Selected_ServicesList
-                                                                .length;
-                                                        n++) {
-                                                      print("-----00");
-                                                      if (ServicesList[index]
-                                                              .Priestobject ==
-                                                          Selected_ServicesList[
-                                                              n]) {
-                                                        Selected_ServicesList
-                                                            .removeAt(n);
-                                                      }
-                                                    }
-                                                  } else {
-                                                    print("-0");
-                                                    Selected_ServicesList.add(
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            child: ServicesList[index]
+                                                            .Priestobject[
+                                                        'poojaThumbnail'] ==
+                                                    null
+                                                ? Image.asset(
+                                                    'assets/images/poojas_placeholder.png',
+                                                    width:
+                                                        screensize.width * 0.25,
+                                                    height:
+                                                        screensize.width * 0.2,
+                                                    fit: BoxFit.fill,
+                                                    alignment: const Alignment(
+                                                        0.0, 0.0),
+                                                  )
+                                                : Image.network(
+                                                    ServicesList[index]
+                                                            .Priestobject[
+                                                        'poojaThumbnail'],
+                                                    width:
+                                                        screensize.width * 0.25,
+                                                    height:
+                                                        screensize.width * 0.2,
+                                                    fit: BoxFit.fill,
+                                                    alignment: const Alignment(
+                                                        0.0, 0.0),
+                                                  ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsetsDirectional
+                                                .fromSTEB(10.0, 0.0, 0.0, 0.0),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Align(
+                                                  alignment:
+                                                      const AlignmentDirectional(
+                                                          0.0, 0.0),
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            0.0, 0.0, 0.0, 0.0),
+                                                    child: SizedBox(
+                                                      width: screensize.width *
+                                                          0.42,
+                                                      child: Text(
                                                         ServicesList[index]
-                                                            .Priestobject);
-                                                  }
-                                                } else {
-                                                  print("--0");
-                                                  Selected_ServicesList.add(
+                                                                .Priestobject[
+                                                            'name'],
+                                                        textAlign:
+                                                            TextAlign.start,
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        style: FlutterFlowTheme
+                                                                .of(context)
+                                                            .bodyMedium
+                                                            .override(
+                                                              color:
+                                                                  Colors.black,
+                                                              fontFamily:
+                                                                  'Inter',
+                                                              fontSize: 14.0,
+                                                              letterSpacing:
+                                                                  0.0,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .normal,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                FFButtonWidget(
+                                                  onPressed: () {
+                                                    setState(() {
                                                       ServicesList[index]
-                                                          .Priestobject);
-                                                }
+                                                              .selected =
+                                                          !ServicesList[index]
+                                                              .selected;
+                                                      if (Selected_ServicesList
+                                                          .isNotEmpty) {
+                                                        print("---0");
+                                                        if (ServicesList[index]
+                                                                .selected ==
+                                                            false) {
+                                                          print("-----0");
+                                                          for (int n = 0;
+                                                              n <
+                                                                  Selected_ServicesList
+                                                                      .length;
+                                                              n++) {
+                                                            print("-----00");
+                                                            if (ServicesList[
+                                                                        index]
+                                                                    .Priestobject ==
+                                                                Selected_ServicesList[
+                                                                    n]) {
+                                                              Selected_ServicesList
+                                                                  .removeAt(n);
+                                                            }
+                                                          }
+                                                        } else {
+                                                          print("-0");
+                                                          Selected_ServicesList
+                                                              .add(ServicesList[
+                                                                      index]
+                                                                  .Priestobject);
+                                                        }
+                                                      } else {
+                                                        print("--0");
+                                                        Selected_ServicesList
+                                                            .add(ServicesList[
+                                                                    index]
+                                                                .Priestobject);
+                                                      }
 
-                                                print(
-                                                    "Selected service list ${Selected_ServicesList.length} $Selected_ServicesList");
-                                              });
+                                                      print(
+                                                          "Selected service list ${Selected_ServicesList.length} $Selected_ServicesList");
+                                                    });
 
-                                              //  Get.to(PriestsWidget(),arguments: ServicesList[index]);
-                                            },
-                                            text: ServicesList[index].selected
-                                                ? 'Remove'
-                                                : 'Add',
-                                            options: FFButtonOptions(
-                                              height: 40.0,
-                                              padding: EdgeInsetsDirectional
-                                                  .fromSTEB(
-                                                      20.0, 0.0, 20.0, 0.0),
-                                              iconPadding: EdgeInsetsDirectional
-                                                  .fromSTEB(0.0, 0.0, 0.0, 0.0),
-                                              color:
-                                                  ServicesList[index].selected
-                                                      ? Color(0xFFD66223)
-                                                      : Color(0xFFFFF6EA),
-                                              textStyle: FlutterFlowTheme.of(
-                                                      context)
-                                                  .titleSmall
-                                                  .override(
-                                                    fontFamily: 'Inter Tight',
+                                                    //  Get.to(PriestsWidget(),arguments: ServicesList[index]);
+                                                  },
+                                                  text: ServicesList[index]
+                                                          .selected
+                                                      ? '-'
+                                                      : '+',
+                                                  options: FFButtonOptions(
+                                                    height: 40.0,
+                                                    padding:
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(0.0, 0.0,
+                                                            00.0, 3.0),
+                                                    iconPadding:
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            0.0, 0.0, 0.0, 0.0),
                                                     color: ServicesList[index]
                                                             .selected
-                                                        ? Color(0xFFFFF6EA)
-                                                        : Color(0xFFD66223),
-                                                    fontSize: 14.0,
-                                                    letterSpacing: 0.0,
+                                                        ? const Color(
+                                                            0xFFD66223)
+                                                        : const Color(
+                                                            0xFFFFF6EA),
+                                                    textStyle: FlutterFlowTheme
+                                                            .of(context)
+                                                        .titleSmall
+                                                        .override(
+                                                          fontFamily:
+                                                              'Inter Tight',
+                                                          color: ServicesList[
+                                                                      index]
+                                                                  .selected
+                                                              ? const Color(
+                                                                  0xFFFFF6EA)
+                                                              : const Color(
+                                                                  0xFFD66223),
+                                                          fontSize: 40.0,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                    elevation: 0.0,
+                                                    borderSide:
+                                                        const BorderSide(
+                                                      color: Color(0xFFD66223),
+                                                      width: 2.0,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0),
                                                   ),
-                                              elevation: 0.0,
-                                              borderSide: BorderSide(
-                                                color: Color(0xFFD66223),
-                                                width: 2.0,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ],
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),

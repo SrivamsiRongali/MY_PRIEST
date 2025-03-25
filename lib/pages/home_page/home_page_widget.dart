@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:my_priest/pages/Temples.dart';
@@ -87,7 +88,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
         }
       }
        });
-      print("my bookings response ${listresponse}");
+      print("my bookings response $listresponse");
             // for(int n=0; n < listresponse.length ; n++){
       //   expandlist.add(false);
       // }
@@ -166,7 +167,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       panchangresponse = mapresponse['data'];
       
        });
-      print("my panchang response ${panchangresponse}");
+      print("my panchang response $panchangresponse");
             // for(int n=0; n < listresponse.length ; n++){
       //   expandlist.add(false);
       // }
@@ -202,27 +203,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
           appBar: AppBar(
             elevation: 0,
             backgroundColor: Colors.transparent,
-            actions: [
-                Padding(
-                                    padding: EdgeInsetsDirectional.fromSTEB(
-                                        0.0, 0.0, 20.0, 0.0),
-                                    child: FlutterFlowIconButton(
-                                      borderColor: Colors.transparent,
-                                      borderRadius: 8.0,
-                                      buttonSize: 40.0,
-                                      fillColor: Color(0x004B39EF),
-                                      icon: Icon(
-                                        Icons.menu,
-                                        color: Colors.black,
-                                        size: 30.0,
-                                      ),
-                                      onPressed: () {
-                                        print('IconButton pressed ...');
-                                      },
-                                    ),
-                                  ),
         
-            ],
           ),
           body: Container(
             decoration: BoxDecoration(
@@ -249,9 +230,10 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                 0.0, 30.0, 0.0, 23.0),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(8.0),
-                              child: Image.asset(
-                                'assets/images/Group.png',
+                              child: SvgPicture.asset(
+                                'images/Priest Services Logo SVG.svg',
                                 fit: BoxFit.cover,
+                                height: 90,
                               ),
                             ),
                           ),
@@ -289,7 +271,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 10.0, 0.0, 15.0),
                               child: Text(
-                                'Welcome to Priest Services online, Please select from below to start searching',
+                                'Welcome to My Priest, Please select from below to start searching',
                                 style: FlutterFlowTheme.of(context)
                                     .bodyMedium
                                     .override(
@@ -332,7 +314,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                               ),
                                             ),
                                           ),
-                                        panchangresponse['tithi']==null? Container() :  Container(
+                                        panchangresponse['tithi']==null? Container() :  SizedBox(
                                             width: screenwidth*0.6,
                                             child: Column(
                                               mainAxisSize: MainAxisSize.max,
@@ -344,7 +326,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                 Padding(
                                                   padding: const EdgeInsets.all(3.0),
                                                   child: Text(
-                                                    '${DateFormat("dd, MMMM y - EEEE").format(DateTime.now())}',
+                                                    DateFormat("dd, MMMM y - EEEE").format(DateTime.now()),
                                                     style: FlutterFlowTheme.of(context)
                                                         .bodyMedium
                                                         .override(
@@ -388,7 +370,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                                 )
                                                         ),
                                                         TextSpan(
-                                                          text: ' till '+ DateFormat("hh:mm").format(DateTime.parse(panchangresponse['tithi']==null? "${DateTime.now()}" :panchangresponse['tithi'][0]['end'].toString())),
+                                                          text: ' till ${DateFormat("hh:mm").format(DateTime.parse(panchangresponse['tithi']==null? "${DateTime.now()}" :panchangresponse['tithi'][0]['end'].toString()))}',
                                                           style: FlutterFlowTheme.of(
                                                                     context)
                                                                 .bodyMedium
@@ -444,7 +426,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                                 
                                                                 ),
                                                         TextSpan(
-                                                          text: ' till '+ DateFormat("hh:mm").format(DateTime.parse(panchangresponse['nakshatra']==null? "${DateTime.now()}" :panchangresponse['nakshatra'][0]['end'].toString())),
+                                                          text: ' till ${DateFormat("hh:mm").format(DateTime.parse(panchangresponse['nakshatra']==null? "${DateTime.now()}" :panchangresponse['nakshatra'][0]['end'].toString()))}',
                                                           style: FlutterFlowTheme.of(
                                                                     context)
                                                                 .bodyMedium
@@ -677,7 +659,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                             ),
                             GestureDetector(
                               onTap: () {
-                                Get.to(mybookings());
+                                Get.to(mybookings(),arguments: true);
                               },
                               child: Container(
                                 
@@ -729,7 +711,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                 ),
                                               ],
                                             ),
-                                            bookingslist.length==0? Row(
+                                            bookingslist.isEmpty? Row(
                                               mainAxisAlignment: MainAxisAlignment.center,
                                               children: [
                                                 Padding(
@@ -783,7 +765,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                                                         CrossAxisAlignment
                                                             .start,
                                                     children: [
-                                                      Container(
+                                                      SizedBox(
                                                         width: screenwidth*0.4,
                                                         child: Text(
                                                           bookingslist[index].bookedserviceobject['serviceResponse']['name'],
