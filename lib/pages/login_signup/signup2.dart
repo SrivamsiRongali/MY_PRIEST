@@ -790,7 +790,7 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
         content: Padding(
           padding: const EdgeInsets.only(left: 10, right: 10),
           child: Text(
-            "Unable to create account please try again later",
+            "User already exists with provided email and/or mobile number",
           ),
         ),
         textConfirm: "ok",

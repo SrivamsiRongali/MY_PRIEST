@@ -3,6 +3,9 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:my_priest/index.dart';
+import 'package:my_priest/pages/catering.dart';
+import 'package:my_priest/pages/flowerdecor.dart';
+import 'package:my_priest/pages/poojaitem.dart';
 import 'package:my_priest/pages/pravachanam.dart';
 
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -265,7 +268,17 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         5.0, 10.0, 5.0, 20.0),
                                     child: GestureDetector(onTap: () {
-                                     
+                                         Get.defaultDialog(
+                                                  title: "",
+                                                  content: Text("Coming soon"),
+                                                  actions: [
+                                                    MaterialButton(
+                                                      onPressed: () {
+                                                        Get.back();
+                                                      },
+                                                      child: Text("Ok"),
+                                                    )
+                                                  ]);
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -329,7 +342,18 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         5.0, 10.0, 5.0, 20.0),
                                     child: GestureDetector(onTap: () {
-                                 
+                                      Get.to(PoojasitemsWidget());
+                                    //  Get.defaultDialog(
+                                    //               title: "",
+                                    //               content: Text("Coming soon"),
+                                    //               actions: [
+                                    //                 MaterialButton(
+                                    //                   onPressed: () {
+                                    //                     Get.back();
+                                    //                   },
+                                    //                   child: Text("Ok"),
+                                    //                 )
+                                    //               ]);
                                       },
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -411,57 +435,73 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       5.0, 10.0, 5.0, 20.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 4.0,
-                                          color: Color(0x33000000),
-                                          offset: Offset(
-                                            0.0,
-                                            2.0,
-                                          ),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          5.0, 10.0, 5.0, 10.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(6.0),
-                                            child: Image.asset(
-                                              'assets/images/ganesh_(5).png',
-                                              fit: BoxFit.fitHeight,
-                                              alignment: Alignment(0.0, 0.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Get.to(flowerdecorWidget());
+                                          // Get.defaultDialog(
+                                          //         title: "",
+                                          //         content: Text("Coming soon"),
+                                          //         actions: [
+                                          //           MaterialButton(
+                                          //             onPressed: () {
+                                          //               Get.back();
+                                          //             },
+                                          //             child: Text("Ok"),
+                                          //           )
+                                          //         ]);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            blurRadius: 4.0,
+                                            color: Color(0x33000000),
+                                            offset: Offset(
+                                              0.0,
+                                              2.0,
                                             ),
-                                          ),
-                                          Container(
-                                            height: 10.0,
-                                            
-                                          ),
-                                          Text(
-                                            'Flower Decor',
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Montserrat',
-                                                  color: Color(0xFFFD642A),
-                                                  fontSize: 10.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
+                                          )
                                         ],
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            5.0, 10.0, 5.0, 10.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6.0),
+                                              child: Image.asset(
+                                                'assets/images/ganesh_(5).png',
+                                                fit: BoxFit.fitHeight,
+                                                alignment: Alignment(0.0, 0.0),
+                                              ),
+                                            ),
+                                            Container(
+                                              height: 10.0,
+                                              
+                                            ),
+                                            Text(
+                                              'Flower Decor',
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    fontFamily: 'Montserrat',
+                                                    color: Color(0xFFFD642A),
+                                                    fontSize: 10.0,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -469,57 +509,73 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       5.0, 10.0, 5.0, 20.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 4.0,
-                                          color: Color(0x33000000),
-                                          offset: Offset(
-                                            0.0,
-                                            2.0,
-                                          ),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          5.0, 10.0, 5.0, 10.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(6.0),
-                                            child: Image.asset(
-                                              'assets/images/image_(2).png',
-                                              fit: BoxFit.fitHeight,
-                                              alignment: Alignment(0.0, 0.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Get.to(cateringWidget());
+                                          // Get.defaultDialog(
+                                          //         title: "",
+                                          //         content: Text("Coming soon"),
+                                          //         actions: [
+                                          //           MaterialButton(
+                                          //             onPressed: () {
+                                          //               Get.back();
+                                          //             },
+                                          //             child: Text("Ok"),
+                                          //           )
+                                          //         ]);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            blurRadius: 4.0,
+                                            color: Color(0x33000000),
+                                            offset: Offset(
+                                              0.0,
+                                              2.0,
                                             ),
-                                          ),
-                                          Container(
-                                            height: 10.0,
-                                            
-                                          ),
-                                          Text(
-                                            'Catering',
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Montserrat',
-                                                  color: Color(0xFFFD642A),
-                                                  fontSize: 10.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
+                                          )
                                         ],
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            5.0, 10.0, 5.0, 10.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6.0),
+                                              child: Image.asset(
+                                                'assets/images/image_(2).png',
+                                                fit: BoxFit.fitHeight,
+                                                alignment: Alignment(0.0, 0.0),
+                                              ),
+                                            ),
+                                            Container(
+                                              height: 10.0,
+                                              
+                                            ),
+                                            Text(
+                                              'Catering',
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    fontFamily: 'Montserrat',
+                                                    color: Color(0xFFFD642A),
+                                                    fontSize: 10.0,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -587,57 +643,72 @@ class _ServicesWidgetState extends State<ServicesWidget> {
                                 Padding(
                                   padding: EdgeInsetsDirectional.fromSTEB(
                                       5.0, 10.0, 5.0, 20.0),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 4.0,
-                                          color: Color(0x33000000),
-                                          offset: Offset(
-                                            0.0,
-                                            2.0,
-                                          ),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          5.0, 10.0, 5.0, 10.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.max,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceEvenly,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(6.0),
-                                            child: Image.asset(
-                                              'assets/images/ganesh_(4).png',
-                                              fit: BoxFit.fitHeight,
-                                              alignment: Alignment(0.0, 0.0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                          Get.defaultDialog(
+                                                  title: "",
+                                                  content: Text("Coming soon"),
+                                                  actions: [
+                                                    MaterialButton(
+                                                      onPressed: () {
+                                                        Get.back();
+                                                      },
+                                                      child: Text("Ok"),
+                                                    )
+                                                  ]);
+                                    },
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            blurRadius: 4.0,
+                                            color: Color(0x33000000),
+                                            offset: Offset(
+                                              0.0,
+                                              2.0,
                                             ),
-                                          ),
-                                          Container(
-                                            height: 10.0,
-                                            
-                                          ),
-                                          Text(
-                                            'Idols',
-                                            textAlign: TextAlign.center,
-                                            maxLines: 2,
-                                            style: FlutterFlowTheme.of(context)
-                                                .bodyMedium
-                                                .override(
-                                                  fontFamily: 'Montserrat',
-                                                  color: Color(0xFFFD642A),
-                                                  fontSize: 10.0,
-                                                  letterSpacing: 0.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
+                                          )
                                         ],
+                                        borderRadius: BorderRadius.circular(12.0),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            5.0, 10.0, 5.0, 10.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6.0),
+                                              child: Image.asset(
+                                                'assets/images/ganesh_(4).png',
+                                                fit: BoxFit.fitHeight,
+                                                alignment: Alignment(0.0, 0.0),
+                                              ),
+                                            ),
+                                            Container(
+                                              height: 10.0,
+                                              
+                                            ),
+                                            Text(
+                                              'Idols',
+                                              textAlign: TextAlign.center,
+                                              maxLines: 2,
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    fontFamily: 'Montserrat',
+                                                    color: Color(0xFFFD642A),
+                                                    fontSize: 10.0,
+                                                    letterSpacing: 0.0,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),

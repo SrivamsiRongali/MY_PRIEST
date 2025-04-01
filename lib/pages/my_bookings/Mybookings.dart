@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../../alertdialog.dart';
 import '../../flutter_flow/flutter_flow_icon_button.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../main.dart';
@@ -64,13 +65,6 @@ class _mybookingsState extends State<mybookings> {
         print('successful');
         mapresponse = json.decode(response1.body);
         listresponse = mapresponse['data'];
-        // for (int n = 0; n < listresponse.length; n++) {
-        //   for (int i = 0;
-        //       i < listresponse[n]['bookingServiceResponse'].length;
-        //       i++) {
-        //     // expandlist.add(false);
-        //   }
-        // }
       });
       return listresponse;
     } else {
@@ -78,6 +72,215 @@ class _mybookingsState extends State<mybookings> {
         loader = false;
       });
       print('fetch unsuccessful');
+    }
+  }
+
+  TextEditingController datecontroller = TextEditingController();
+  TextEditingController timecontroller = TextEditingController();
+  String selectedTime = "00:00";
+  GlobalKey<FormState> formkey = GlobalKey<FormState>();
+
+  _re_shcedule_apicall(
+      int id,
+      String bookingstatus,
+      String description,
+      int priestid,
+      List servicelist,
+      Map address,
+      String date,
+      String time,
+      int index) async {
+    setState(() {
+      loader = true;
+    });
+
+    Map mapresponse;
+    http.Response response1;
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    var token = sharedPreferences.getString("token");
+    var userid = sharedPreferences.getInt("userid");
+    var data = json.encode({
+      "address": {
+        "addressLine1": address['addressLine1'],
+        "addressLine2": address['addressLine2'],
+        "addressType": address['addressType'],
+        "cityId": address['cityId'],
+        "currentLatitude": 0,
+        "currentLongitude": 0,
+        "description": address['description'],
+        "fax": "string",
+        "id": address['id'],
+        "zip": "string"
+      },
+      "bookingDate": "${date}T$time:00",
+      "bookingStatus": bookingstatus,
+      "description": description,
+      "priestId": priestid,
+      "servicesId": servicelist
+    });
+    print("for id $id reschedule request object $data");
+    response1 = await http.put(
+        Uri.parse(
+            "https://${AppConstants.ipaddress.ipaddress}/api/bookings/$id"),
+        headers: {
+          "accept": "*/*",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: data);
+    if (response1.statusCode == 200) {
+      setState(() {
+        loader = false;
+        listresponse[index]['bookingDate'] = "${date}T$time:00";
+        print('successful');
+        mapresponse = json.decode(response1.body);
+      });
+      Get.defaultDialog(
+        title: "",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text("Booking Rescheduled successfully",
+              style: TextStyle(color: Colors.black)),
+        ),
+        actions: [
+          MaterialButton(
+            color: Color.fromARGB(255, 255, 123, 0),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'ok',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+      return listresponse;
+    } else {
+      print("response ${response1.body}");
+      setState(() {
+        loader = false;
+      });
+      Get.defaultDialog(
+        title: "Unable to Rescheduled",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text("Please try after some time",
+              style: TextStyle(color: Colors.black)),
+        ),
+        actions: [
+          MaterialButton(
+            color: Color.fromARGB(255, 255, 123, 0),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'ok',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+      print('fetch unsuccessful');
+    }
+  }
+
+  Future updatebookingstatus(int bookingid, int index) async {
+    setState(() {
+      loader = true;
+    });
+    // print(" date = ${date}T$time:00.00Z,priest=$priestid,serviceid=$serviceid");
+    var data = json
+        .encode({"bookingStatus": "Cancelled", "paymentReference": "string"});
+    print("booking object $data");
+    Map mapresponse;
+    Map mapresponse2;
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+
+    var token = sharedPreferences.getString("token");
+    http.Response response = await http.put(
+        Uri.parse(
+            "https://${AppConstants.ipaddress.ipaddress}/api/bookings/payment/$bookingid"),
+        headers: {
+          "accept": "*/*",
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token"
+        },
+        body: data);
+
+    if (response.statusCode == 200) {
+      mapresponse = json.decode(response.body);
+
+      setState(() {
+        loader = false;
+        listresponse[index]['bookingStatus'] = "Cancelled";
+      });
+      Get.defaultDialog(
+        title: "",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text("Booking canceled successfully",
+              style: TextStyle(color: Colors.black)),
+        ),
+        actions: [
+          MaterialButton(
+            color: Color.fromARGB(255, 255, 123, 0),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'ok',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+      print('Booking status updated successfully');
+
+      print(response.body);
+    } else {
+      setState(() {
+        loader = false;
+      });
+
+      print(" data =$data");
+      print('fail');
+      Get.defaultDialog(
+        title: "Unable to update payment status",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text("Please try after some time",
+              style: TextStyle(color: Colors.black)),
+        ),
+        actions: [
+          MaterialButton(
+            color: Color.fromARGB(255, 255, 123, 0),
+            onPressed: () {
+              Get.back();
+            },
+            child: Text(
+              'ok',
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+      print(response.statusCode);
+      print(response.body);
     }
   }
 
@@ -437,28 +640,28 @@ class _mybookingsState extends State<mybookings> {
                                               ),
                                             ],
                                           ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              // Get.to(chat());
-                                            },
-                                            child: Container(
-                                              height: 45,
-                                              width: 45,
-                                              decoration: BoxDecoration(
-                                                  color: Color.fromARGB(
-                                                      82, 132, 197, 161),
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          100)),
-                                              child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(12.0),
-                                                child: SvgPicture.asset(
-                                                  'images/Vector (1).svg',
-                                                ),
-                                              ),
-                                            ),
-                                          )
+                                          // GestureDetector(
+                                          //   onTap: () {
+                                          //     // Get.to(chat());
+                                          //   },
+                                          //   child: Container(
+                                          //     height: 45,
+                                          //     width: 45,
+                                          //     decoration: BoxDecoration(
+                                          //         color: Color.fromARGB(
+                                          //             82, 132, 197, 161),
+                                          //         borderRadius:
+                                          //             BorderRadius.circular(
+                                          //                 100)),
+                                          //     child: Padding(
+                                          //       padding:
+                                          //           const EdgeInsets.all(12.0),
+                                          //       child: SvgPicture.asset(
+                                          //         'images/Vector (1).svg',
+                                          //       ),
+                                          //     ),
+                                          //   ),
+                                          // )
                                         ]),
                                     SizedBox(
                                       height: 25,
@@ -493,33 +696,54 @@ class _mybookingsState extends State<mybookings> {
                                               )
                                             : Container(
                                                 height: 25,
-                                                width: 70,
                                                 decoration: BoxDecoration(
                                                     borderRadius:
-                                                        BorderRadius.circular(
+                                                        BorderRadius.circular( 
                                                             100),
                                                     color: listresponse[index][
                                                                 'bookingStatus'] ==
-                                                            "Booked"
+                                                            "Cancelled"
                                                         ? Color.fromARGB(
-                                                            39, 2, 255, 57)
+                                                            255, 215, 27, 27)
                                                         : Color.fromARGB(
                                                             39, 119, 119, 119)),
                                                 child: Center(
-                                                    child: Text(
-                                                  " ${listresponse[index]['bookingStatus']}",
-                                                  style: TextStyle(
-                                                      color: listresponse[index]
-                                                                  [
-                                                                  'bookingStatus'] ==
-                                                              "Booked"
-                                                          ? Color.fromARGB(
-                                                              255, 35, 214, 104)
-                                                          : Color.fromARGB(255,
-                                                              147, 147, 147),
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w500),
+                                                    child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10,
+                                                          right: 10,
+                                                          top: 5,
+                                                          bottom: 5),
+                                                  child: Text(
+                                                    "${listresponse[index]['bookingStatus']}",
+                                                    style: TextStyle(
+                                                        color: listresponse[
+                                                                        index][
+                                                                    'bookingStatus'] ==
+                                                                "Booked"
+                                                            ? Color.fromARGB(
+                                                                255,
+                                                                35,
+                                                                214,
+                                                                104)
+                                                            : listresponse[index][
+                                                                        'bookingStatus'] ==
+                                                                    "Cancelled"
+                                                                ? Color.fromARGB(
+                                                                    255,
+                                                                    255,
+                                                                    255,
+                                                                    255)
+                                                                : Color.fromARGB(
+                                                                    255,
+                                                                    147,
+                                                                    147,
+                                                                    147),
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w500),
+                                                  ),
                                                 )),
                                               )
                                       ],
@@ -816,13 +1040,14 @@ class _mybookingsState extends State<mybookings> {
                                                                         children: [
                                                                           // Table Header Row
                                                                           const TableRow(
-                                                                            
                                                                             children: [
                                                                               Padding(
                                                                                 padding: EdgeInsets.all(12),
                                                                                 child: Text(
                                                                                   'Grocery Name',
-                                                                                  style: TextStyle(fontWeight: FontWeight.bold, ),
+                                                                                  style: TextStyle(
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                  ),
                                                                                   textAlign: TextAlign.center,
                                                                                 ),
                                                                               ),
@@ -830,7 +1055,9 @@ class _mybookingsState extends State<mybookings> {
                                                                                 padding: EdgeInsets.all(12),
                                                                                 child: Text(
                                                                                   'Quantity',
-                                                                                  style: TextStyle(fontWeight: FontWeight.bold, ),
+                                                                                  style: TextStyle(
+                                                                                    fontWeight: FontWeight.bold,
+                                                                                  ),
                                                                                   textAlign: TextAlign.center,
                                                                                 ),
                                                                               ),
@@ -1008,100 +1235,413 @@ class _mybookingsState extends State<mybookings> {
                                     SizedBox(
                                       height: 10,
                                     ),
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: MaterialButton(
-                                            elevation: 0,
-                                            onPressed: () {
-                                              Get.defaultDialog(
-                                                  title: "",
-                                                  content: Text("Coming soon"),
-                                                  actions: [
-                                                    MaterialButton(
-                                                      onPressed: () {
-                                                        Get.back();
+                                    listresponse[index]['bookingStatus'] ==
+                                            "Cancelled"
+                                        ? Container()
+                                        : Row(
+                                            children: [
+                                              Flexible(
+                                                child: MaterialButton(
+                                                  elevation: 0,
+                                                  onPressed: () {
+                                                    datecontroller
+                                                        .text = listresponse[
+                                                                    index][
+                                                                'bookingDate'] ==
+                                                            null
+                                                        ? ""
+                                                        : DateFormat(
+                                                                "dd-MM-yyyy")
+                                                            .format(DateTime.parse(
+                                                                listresponse[
+                                                                        index][
+                                                                    'bookingDate']));
+                                                    timecontroller
+                                                        .text = listresponse[
+                                                                    index][
+                                                                'bookingDate'] ==
+                                                            null
+                                                        ? ""
+                                                        : DateFormat("hh:mm")
+                                                            .format(DateTime.parse(
+                                                                listresponse[
+                                                                        index][
+                                                                    'bookingDate']));
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return popupwithDiscardandsavebuttons(
+                                                          onPressedfordiscard:
+                                                              () {
+                                                            datecontroller
+                                                                .text = listresponse[
+                                                                            index]
+                                                                        [
+                                                                        'bookingDate'] ==
+                                                                    null
+                                                                ? ""
+                                                                : DateFormat(
+                                                                        "dd-MM-yyyy")
+                                                                    .format(DateTime.parse(
+                                                                        listresponse[index]
+                                                                            [
+                                                                            'bookingDate']));
+                                                            timecontroller
+                                                                .text = listresponse[
+                                                                            index]
+                                                                        [
+                                                                        'bookingDate'] ==
+                                                                    null
+                                                                ? ""
+                                                                : DateFormat(
+                                                                        "hh:mm")
+                                                                    .format(DateTime.parse(
+                                                                        listresponse[index]
+                                                                            [
+                                                                            'bookingDate']));
+                                                            Get.back();
+                                                          },
+                                                          onPressedforsave:
+                                                              () async {
+                                                            List serviceidlist =
+                                                                [];
+                                                            for (int n = 0;
+                                                                n <
+                                                                    listresponse[index]
+                                                                            [
+                                                                            'bookingServiceResponse']
+                                                                        .length;
+                                                                n++) {
+                                                              serviceidlist.add(
+                                                                  listresponse[
+                                                                              index]
+                                                                          [
+                                                                          'bookingServiceResponse'][n]
+                                                                      [
+                                                                      'servicesId']);
+                                                            }
+                                                            if (formkey
+                                                                .currentState!
+                                                                .validate()) {
+                                                              _re_shcedule_apicall(
+                                                                  listresponse[
+                                                                          index][
+                                                                      'id'],
+                                                                  listresponse[
+                                                                          index]
+                                                                      [
+                                                                      'bookingStatus'],
+                                                                  listresponse[
+                                                                          index]
+                                                                      [
+                                                                      'description'],
+                                                                  listresponse[
+                                                                          index]
+                                                                      [
+                                                                      'priestId'],
+                                                                  serviceidlist,
+                                                                  listresponse[
+                                                                          index]
+                                                                      [
+                                                                      'address'],
+                                                                  datecontroller
+                                                                      .text,
+                                                                  selectedTime,
+                                                                  index);
+
+                                                              Get.back();
+                                                            }
+                                                          },
+                                                          content: Form(
+                                                            key: formkey,
+                                                            child: Container(
+                                                              height: 100,
+                                                              child: Column(
+                                                                children: [
+                                                                  Text(
+                                                                    'Date/Time',
+                                                                    style: FlutterFlowTheme.of(
+                                                                            context)
+                                                                        .bodyMedium
+                                                                        .override(
+                                                                          fontFamily:
+                                                                              'Inter',
+                                                                          color:
+                                                                              Color(0xFFFD642A),
+                                                                          fontSize:
+                                                                              16.0,
+                                                                          letterSpacing:
+                                                                              0.0,
+                                                                          fontWeight:
+                                                                              FontWeight.w500,
+                                                                        ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: EdgeInsetsDirectional
+                                                                        .fromSTEB(
+                                                                            0.0,
+                                                                            10.0,
+                                                                            0.0,
+                                                                            10.0),
+                                                                    child: Row(
+                                                                      mainAxisSize:
+                                                                          MainAxisSize
+                                                                              .max,
+                                                                      children: [
+                                                                        Expanded(
+                                                                          child:
+                                                                              SizedBox(
+                                                                            width:
+                                                                                200.0,
+                                                                            child:
+                                                                                TextFormField(
+                                                                              controller: datecontroller,
+                                                                              obscureText: false,
+                                                                              decoration: InputDecoration(
+                                                                                isDense: true,
+                                                                                labelText: 'Select Date',
+                                                                                labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                                                      fontFamily: 'Inter',
+                                                                                      letterSpacing: 0.0,
+                                                                                      fontWeight: FontWeight.w300,
+                                                                                    ),
+                                                                                hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                                                      fontFamily: 'Inter',
+                                                                                      letterSpacing: 0.0,
+                                                                                      fontWeight: FontWeight.w300,
+                                                                                    ),
+                                                                                filled: true,
+                                                                                fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                suffixIcon: Icon(
+                                                                                  Icons.calendar_today_outlined,
+                                                                                ),
+                                                                              ),
+                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                    fontFamily: 'Inter',
+                                                                                    letterSpacing: 0.0,
+                                                                                  ),
+                                                                              cursorColor: Colors.black,
+                                                                              onTap: () async {
+                                                                                DateTime? pickeddate = await showDatePicker(
+                                                                                  context: context,
+                                                                                  initialDate: DateTime.now(),
+                                                                                  firstDate: DateTime.now(),
+                                                                                  lastDate: DateTime(2050),
+                                                                                  builder: (context, child) {
+                                                                                    return Theme(
+                                                                                      data: Theme.of(context).copyWith(
+                                                                                        colorScheme: ColorScheme.light(
+                                                                                          primary: Color.fromARGB(255, 214, 98, 35), // <-- SEE HERE
+                                                                                          onPrimary: Colors.white, // <-- SEE HERE
+                                                                                          onSurface: Colors.black, // <-- SEE HERE
+                                                                                        ),
+                                                                                        textButtonTheme: TextButtonThemeData(
+                                                                                          style: TextButton.styleFrom(
+                                                                                            foregroundColor: Colors.orange, // button text color
+                                                                                          ),
+                                                                                        ),
+                                                                                      ),
+                                                                                      child: child!,
+                                                                                    );
+                                                                                  },
+                                                                                );
+                                                                                if (pickeddate != null) {
+                                                                                  setState(() {
+                                                                                    datecontroller.text = DateFormat('yyyy-MM-dd').format(pickeddate);
+                                                                                  });
+                                                                                }
+                                                                              },
+                                                                              validator: (value) {
+                                                                                if (value!.isEmpty) {
+                                                                                  return "Required";
+                                                                                } else {
+                                                                                  return null;
+                                                                                }
+                                                                              },
+                                                                              keyboardType: TextInputType.none,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                        SizedBox(
+                                                                          width:
+                                                                              10,
+                                                                        ),
+                                                                        Expanded(
+                                                                          child:
+                                                                              SizedBox(
+                                                                            width:
+                                                                                200.0,
+                                                                            child:
+                                                                                TextFormField(
+                                                                              controller: timecontroller,
+                                                                              autofocus: false,
+                                                                              obscureText: false,
+                                                                              decoration: InputDecoration(
+                                                                                isDense: true,
+                                                                                labelText: 'Select Time',
+                                                                                labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
+                                                                                      fontFamily: 'Inter',
+                                                                                      letterSpacing: 0.0,
+                                                                                      fontWeight: FontWeight.w300,
+                                                                                    ),
+                                                                                filled: true,
+                                                                                fillColor: FlutterFlowTheme.of(context).secondaryBackground,
+                                                                                suffixIcon: Icon(
+                                                                                  Icons.access_time,
+                                                                                ),
+                                                                              ),
+                                                                              style: FlutterFlowTheme.of(context).bodyMedium.override(
+                                                                                    fontFamily: 'Inter',
+                                                                                    letterSpacing: 0.0,
+                                                                                  ),
+                                                                              cursorColor: FlutterFlowTheme.of(context).primaryText,
+                                                                              onTap: () async {
+                                                                                TimeOfDay? pickedTime = await showTimePicker(
+                                                                                  context: context,
+                                                                                  initialTime: TimeOfDay.now(),
+                                                                                  builder: (BuildContext context, Widget? child) {
+                                                                                    return MediaQuery(
+                                                                                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+                                                                                      child: Theme(
+                                                                                        data: ThemeData.light().copyWith(
+                                                                                          colorScheme: ColorScheme.light(
+                                                                                            primary: Color.fromARGB(255, 214, 98, 35),
+                                                                                            onSurface: Color.fromARGB(255, 214, 98, 35),
+                                                                                            onSecondaryContainer: Color.fromARGB(255, 214, 98, 35),
+                                                                                          ),
+                                                                                          buttonTheme: ButtonThemeData(
+                                                                                            colorScheme: ColorScheme.light(
+                                                                                              primary: Color.fromARGB(255, 214, 98, 35),
+                                                                                            ),
+                                                                                          ),
+                                                                                        ),
+                                                                                        child: child!,
+                                                                                      ),
+                                                                                    );
+                                                                                  },
+                                                                                );
+
+                                                                                if (pickedTime != null) {
+                                                                                  DateTime currentDate = DateTime.now();
+                                                                                  DateTime selectedDateTime = DateTime(
+                                                                                    currentDate.year,
+                                                                                    currentDate.month,
+                                                                                    currentDate.day,
+                                                                                    pickedTime.hour,
+                                                                                    pickedTime.minute,
+                                                                                    1,
+                                                                                    currentDate.millisecond,
+                                                                                  );
+
+                                                                                  selectedTime = DateFormat('HH:mm').format(selectedDateTime);
+                                                                                  print("object: $selectedTime");
+
+                                                                                  timecontroller.text = "${pickedTime.hourOfPeriod.toString().padLeft(2, '0')}:${pickedTime.minute.toString().padLeft(2, '0')} ${pickedTime.period.index == 0 ? 'AM' : 'PM'}";
+                                                                                }
+                                                                              },
+                                                                              validator: (value) {
+                                                                                if (value!.isEmpty) {
+                                                                                  return "Required";
+                                                                                } else {
+                                                                                  return null;
+                                                                                }
+                                                                              },
+                                                                              keyboardType: TextInputType.none,
+                                                                            ),
+                                                                          ),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
                                                       },
-                                                      child: Text("Ok"),
-                                                    )
-                                                  ]);
-                                            },
-                                            color: Color.fromARGB(
-                                                255, 214, 98, 35),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10)),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 17),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                // ignore: prefer_const_literals_to_create_immutables
-                                                children: [
-                                                  Text('Re-Schedule',
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w700)),
-                                                ],
+                                                    );
+                                                  },
+                                                  color: Color.fromARGB(
+                                                      255, 214, 98, 35),
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 17),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      // ignore: prefer_const_literals_to_create_immutables
+                                                      children: [
+                                                        Text('Re-Schedule',
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .white,
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: 10,
-                                        ),
-                                        Flexible(
-                                          child: MaterialButton(
-                                            elevation: 0,
-                                            focusColor: Color.fromARGB(
-                                                255, 214, 98, 35),
-                                            onPressed: () {
-                                              Get.defaultDialog(
-                                                  title: "",
-                                                  content: Text("Coming soon"),
-                                                  actions: [
-                                                    MaterialButton(
-                                                      onPressed: () {
-                                                        Get.back();
-                                                      },
-                                                      child: Text("Ok"),
-                                                    )
-                                                  ]);
-                                              //  Navigator.push(context,
-                                              //       MaterialPageRoute(builder: (context) => screen2()));
-                                            },
-                                            color:
-                                                Color.fromARGB(39, 255, 99, 2),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10)),
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 17),
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                // ignore: prefer_const_literals_to_create_immutables
-                                                children: [
-                                                  Text('Cancel',
-                                                      style: TextStyle(
-                                                          color: Color.fromARGB(
-                                                              255, 214, 98, 35),
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w700)),
-                                                ],
+                                              SizedBox(
+                                                width: 10,
                                               ),
-                                            ),
+                                              Flexible(
+                                                child: MaterialButton(
+                                                  elevation: 0,
+                                                  focusColor: Color.fromARGB(
+                                                      255, 214, 98, 35),
+                                                  onPressed: () {
+                                                    updatebookingstatus(
+                                                        listresponse[index]
+                                                            ['id'],
+                                                        index);
+                                                    //  Navigator.push(context,
+                                                    //       MaterialPageRoute(builder: (context) => screen2()));
+                                                  },
+                                                  color: Color.fromARGB(
+                                                      39, 255, 99, 2),
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              10)),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 17),
+                                                    child: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      // ignore: prefer_const_literals_to_create_immutables
+                                                      children: [
+                                                        Text('Cancel',
+                                                            style: TextStyle(
+                                                                color: Color
+                                                                    .fromARGB(
+                                                                        255,
+                                                                        214,
+                                                                        98,
+                                                                        35),
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700)),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
                                   ],
                                 ),
                               ),

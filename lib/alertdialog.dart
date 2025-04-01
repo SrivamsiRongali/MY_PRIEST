@@ -187,3 +187,63 @@ Widget content;
               );
   }
 }
+
+class popupwithcustombuttons extends StatelessWidget {
+   popupwithcustombuttons({super.key, required this.onPressedforbutton1,required this.onPressedforbutton2,required this.content,required this.title,required this.button1label,required this.button2label});
+VoidCallback onPressedforbutton1;
+VoidCallback onPressedforbutton2;
+String button1label;
+String button2label;
+Widget content;
+Widget title;
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Center(child: title),
+                backgroundColor:Colors.grey[200],
+                surfaceTintColor: Colors.grey[200],
+                actions: [Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                            0.0, 0.0, 0.0, 0.0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            TextButton(
+                              onPressed: onPressedforbutton1,
+                              child: Text(
+                                button1label,
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  fontSize: 15.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: onPressedforbutton2,
+                              child: Text(
+                              button2label,
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  color: FlutterFlowTheme.of(context).primary,
+                                  fontSize: 15.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),],
+                content: Container(
+                  
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                        0.0, 0.0, 0.0, 0.0),
+                    child: content
+                  ),
+                ),
+              );
+  }
+}

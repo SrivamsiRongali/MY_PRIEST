@@ -26,10 +26,17 @@ class signin extends StatefulWidget {
 class _signinState extends State<signin> {
   bool securetext = true;
   bool visibility = true;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _apicall();
+  }
 
   TextEditingController emailcontroller = TextEditingController();
   TextEditingController passwordcontroller = TextEditingController();
   GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  GlobalKey<FormState> emailformkey = GlobalKey<FormState>();
   DateTime backpressed = DateTime.now();
   @override
   Widget build(BuildContext context) {
@@ -102,9 +109,9 @@ class _signinState extends State<signin> {
                                 ),
                               ),
                             ),
-                           
+
                             Padding(
-                               padding: const EdgeInsets.only(bottom: 20),
+                              padding: const EdgeInsets.only(bottom: 20),
                               child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
@@ -121,72 +128,74 @@ class _signinState extends State<signin> {
                                   )),
                             ),
 
-                            
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: TextFormField(
-                                controller: emailcontroller,
-                                keyboardType: TextInputType.emailAddress,
-                                cursorColor: Colors.black,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                                          fillColor: Colors.white,
-                                  hoverColor: Colors.white,
+                            Form(
+                              key: emailformkey,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: TextFormField(
+                                  controller: emailcontroller,
+                                  keyboardType: TextInputType.emailAddress,
+                                  cursorColor: Colors.black,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Colors.white,
+                                    hoverColor: Colors.white,
                               
-                                  labelText: "Email Address",
-                                  labelStyle: TextStyle(
-                                      color:
-                                          Color.fromARGB(255, 204, 204, 204)),
-                                  // hintText: "Enter Email",
-                                  hintStyle:
-                                      TextStyle(fontWeight: FontWeight.bold),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      borderSide: BorderSide(
-                                          color: Color.fromARGB(
-                                              255, 232, 232, 232),
-                                          width: 0.1)),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      borderSide: BorderSide(
-                                          color:
-                                              Color.fromARGB(255, 214, 98, 35),
-                                          width: 1)),
-                                  prefixIcon: Icon(
-                                    Icons.mail,
-                                    color: Color.fromARGB(255, 204, 204, 204),
+                                    labelText: "Email Address",
+                                    labelStyle: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 204, 204, 204)),
+                                    // hintText: "Enter Email",
+                                    hintStyle:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                        borderSide: BorderSide(
+                                            color: Color.fromARGB(
+                                                255, 232, 232, 232),
+                                            width: 0.1)),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(5),
+                                        borderSide: BorderSide(
+                                            color:
+                                                Color.fromARGB(255, 214, 98, 35),
+                                            width: 1)),
+                                    prefixIcon: Icon(
+                                      Icons.mail,
+                                      color: Color.fromARGB(255, 204, 204, 204),
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(visibility ? null : Icons.clear),
+                                      onPressed: () {
+                                        emailcontroller.clear();
+                                      },
+                                      color: Color.fromARGB(255, 204, 204, 204),
+                                    ),
                                   ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(visibility ? null : Icons.clear),
-                                    onPressed: () {
-                                      emailcontroller.clear();
-                                    },
-                                    color: Color.fromARGB(255, 204, 204, 204),
-                                  ),
-                                ),
-                                textInputAction: TextInputAction.next,
-                                // onEditingComplete: () {
-                                //   FocusScope.of(context).requestFocus(passordfocus);
-                                // },
-                                maxLines: 1,
-                                validator: (value) {
-                                  if (value!.isEmpty ||
-                                      !RegExp("^[a-zA-Z0-9+_.-]+@[a-z-A-Z0-9]+[.][a-zA-Z]+[a-zA-Z]")
-                                          .hasMatch(value)) {
-                                    setState(() {
-                                      visibility = false;
-                                    });
-                                    if (value.isNotEmpty) {
-                                      return ('Please enter valid email id ');
+                                  textInputAction: TextInputAction.next,
+                                  // onEditingComplete: () {
+                                  //   FocusScope.of(context).requestFocus(passordfocus);
+                                  // },
+                                  maxLines: 1,
+                                  validator: (value) {
+                                    if (value!.isEmpty ||
+                                        !RegExp("^[a-zA-Z0-9+_.-]+@[a-z-A-Z0-9]+[.][a-zA-Z]+[a-zA-Z]")
+                                            .hasMatch(value)) {
+                                      setState(() {
+                                        visibility = false;
+                                      });
+                                      if (value.isNotEmpty) {
+                                        return ('Please enter valid email id ');
+                                      }
+                                      return "enter email id";
+                                    } else {
+                                      return null;
                                     }
-                                    return "enter email id";
-                                  } else {
-                                    return null;
-                                  }
-                                },
+                                  },
+                                ),
                               ),
                             ),
-                        
+
                             Padding(
                               padding: const EdgeInsets.only(bottom: 10),
                               child: TextFormField(
@@ -198,19 +207,21 @@ class _signinState extends State<signin> {
                                   fillColor: Colors.white,
                                   labelText: "Password",
                                   labelStyle: TextStyle(
-                                      color: Color.fromARGB(255, 204, 204, 204)),
+                                      color:
+                                          Color.fromARGB(255, 204, 204, 204)),
                                   // hintText: "Password",
                                   // hintStyle: TextStyle(fontWeight: FontWeight.bold),
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(5),
                                       borderSide: BorderSide(
-                                          color:
-                                              Color.fromARGB(255, 232, 232, 232),
+                                          color: Color.fromARGB(
+                                              255, 232, 232, 232),
                                           width: 0.1)),
                                   focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(5),
                                       borderSide: BorderSide(
-                                          color: Color.fromARGB(255, 214, 98, 35),
+                                          color:
+                                              Color.fromARGB(255, 214, 98, 35),
                                           width: 1)),
                                   prefixIcon: Icon(
                                     Icons.lock,
@@ -242,7 +253,7 @@ class _signinState extends State<signin> {
                                 },
                               ),
                             ),
-                        
+
                             Padding(
                               padding: const EdgeInsets.only(bottom: 10),
                               child: MaterialButton(
@@ -275,11 +286,16 @@ class _signinState extends State<signin> {
                                 ),
                               ),
                             ),
-                          
+
                             Row(
                               children: [
                                 TextButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      if (emailformkey.currentState!
+                                          .validate()) {
+                                        forgotpassword(emailcontroller.text);
+                                      }
+                                    },
                                     child: Text(
                                       'Forgot Password?',
                                       style: FlutterFlowTheme.of(context)
@@ -439,7 +455,7 @@ class _signinState extends State<signin> {
                             //     fit: BoxFit.fitWidth,
                             //   ),
                             // ),
-                            
+
                             // MaterialButton(
                             //   onPressed: () async {
                             //     Get.defaultDialog(
@@ -525,6 +541,104 @@ class _signinState extends State<signin> {
     );
   }
 
+  Map? mapresponse;
+  String resetpasswordurl = "";
+  String param="";
+  Future _apicall() async {
+    http.Response response1;
+
+    response1 = await http.get(
+      Uri.parse("https://www.indianpriestservices.com/app-config.php"),
+      headers: {
+        "accept": "*/*",
+        "Content-Type": "application/json",
+      },
+    );
+    if (response1.statusCode == 200) {
+      print('successful');
+      print(response1.body);
+      mapresponse = json.decode(response1.body);
+      setState(() {
+        resetpasswordurl = mapresponse!['reset_password_request']['url'];
+        param=mapresponse!['reset_password_request']['params'][0];
+      });
+
+      return mapresponse;
+    } else {
+      print(response1.statusCode);
+      print('fetch unsuccessful');
+      print(response1.body);
+    }
+  }
+
+  Future forgotpassword(String email) async {
+    var data = json.encode({
+      "$param": email,
+    });
+    print("rest object $data");
+    Map mapresponse;
+    print("login api is hit");
+    http.Response response = await http.post(Uri.parse("$resetpasswordurl"),
+        headers: {"accept": "*/*", "Content-Type": "application/json"},
+        body: data);
+
+    if (response.statusCode == 200) {
+      mapresponse = json.decode(response.body);
+      print("reset link msg - $mapresponse");
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: Text(''),content: Text("${mapresponse['message']}",textAlign: TextAlign.center,),
+                actions: [
+                  Center(
+                    child: MaterialButton(
+                      color: Color.fromARGB(255, 214, 98, 35),
+                      onPressed: () async {
+                        Get.back();
+                      },
+                      child: Text(
+                        'OK',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                ],
+              ));
+      // Get.defaultDialog(
+      //   content: Text(
+      //     "Welcome ",
+      //     style: TextStyle(fontSize: 20),
+      //   ),
+      //   textConfirm: "Next>>",
+      //   confirmTextColor: Colors.white,
+      //   onConfirm: () {
+      //     Navigator.push(
+      //         context, MaterialPageRoute(builder: (context) => screen4_5()));
+      //     // Get.offNamed(Routes.PRODUCTS);
+      //   },
+      // );
+    } else {
+      print('fail');
+      Get.defaultDialog(
+        title: "",
+        titleStyle: TextStyle(color: Colors.red),
+        content: Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: Text(
+            "Unable to reset password please try again after some time",
+          ),
+        ),
+        textConfirm: "ok",
+        confirmTextColor: Colors.white,
+        onConfirm: () {
+          Get.back();
+        },
+      );
+      print(response.statusCode);
+      print(response.body);
+    }
+  }
+
   Future userlogin(String email, String password) async {
     var data = json.encode({
       "email": email,
@@ -547,14 +661,16 @@ class _signinState extends State<signin> {
       // var Lastname = mapresponse['user']['lastName'];
       final SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
-          sharedPreferences.setString("name","${ mapresponse['user']['firstName']} ${mapresponse['user']['lastName']}");
+      sharedPreferences.setString("name",
+          "${mapresponse['user']['firstName']} ${mapresponse['user']['lastName']}");
       sharedPreferences.setString("token", mapresponse['token']);
       sharedPreferences.setInt("userid", mapresponse['user']['id']);
-      
+
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
-                title: Text('Welcome ${mapresponse['user']['firstName']} ${mapresponse['user']['lastName']}'),
+                title: Text(
+                    'Welcome ${mapresponse['user']['firstName']} ${mapresponse['user']['lastName']}'),
                 actions: [
                   MaterialButton(
                     color: Color.fromARGB(255, 214, 98, 35),

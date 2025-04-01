@@ -74,7 +74,43 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
     print("passed data ${priestandservicedata[0]}");
     print("passed data ${priestandservicedata[1]}");
   }
+  String Razorpaykey='';
+  Map? mapresponse;
+  Future _apicall() async {
+    setState(() {
+      loader=true;
+    });
+    http.Response response1;
 
+    response1 = await http.get(
+      Uri.parse(
+          "https://www.indianpriestservices.com/app-config.php"),
+      headers: {
+        "accept": "*/*",
+        "Content-Type": "application/json",
+      },
+    );
+    if (response1.statusCode == 200) {
+      print('successful');
+      print(response1.body);
+      mapresponse = json.decode(response1.body);
+      setState(() {
+        loader=false;
+        
+        Razorpaykey = mapresponse!['razor_pay_key'];
+      });
+
+      return mapresponse;
+    } else {
+        setState(() {
+      loader=false;
+    });
+      print(response1.statusCode);
+      print('fetch unsuccessful');
+      print(response1.body);
+    }
+  }
+ 
   bool cityresponse=false;
   Future<List<String>> fetchSearchPredictions(String query) async {
     // Ensure the query is not empty
@@ -517,7 +553,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
 //   "offer_id": null
 // }
 print('''
-        'key' :'rzp_test_mtBEoRXCieHNgB'
+        'key' :'$Razorpaykey'
         'amount':${ mapresponse2['amount']}, //in paise.
         'name': 'Payment for Service(s) - $servicename',
         'order_id':
@@ -532,7 +568,7 @@ print('''
         }
       ''');
       razorpay.open({
-        'key': 'rzp_test_mtBEoRXCieHNgB',
+        'key': '$Razorpaykey',
         'amount':
         
         mapresponse2['amount'], //in paise.
@@ -1680,7 +1716,8 @@ print('''
                                   
                                   print("Service ids = $serviceId");
                                   if (serviceId.length > 0) {
-                                    userbooking(
+                                    if(Razorpaykey.isNotEmpty){
+                                      userbooking(
                                         _model.datetextController1.text,
                                         selectedTime,
                                         priestandservicedata[1]['priestId'],
@@ -1691,6 +1728,14 @@ print('''
                                             _model.citytextController5.text +
                                             _model.statetextController6.text +
                                             _model.dropDownValue.toString());
+                                    }
+                                    else{
+                                      Get.defaultDialog(
+                                        title: "",
+                                        content: Text("Unable make bookings right now please try again later")
+                                      );
+                                    }
+                                    
                                   }
                                 }
                               }
