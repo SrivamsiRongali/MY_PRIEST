@@ -5,6 +5,7 @@ import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 import 'package:my_priest/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../../shared.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
@@ -20,7 +21,11 @@ class PoojasitemsWidget extends StatefulWidget {
   @override
   State<PoojasitemsWidget> createState() => _PoojasitemsWidgetState();
 }
-
+class poojaitemlist {
+  poojaitemlist({required this.poojaobject, required this.selected});
+  Map poojaobject = {};
+  bool selected = false;
+}
 class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -35,7 +40,7 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
     super.dispose();
   }
 
-  List ServicesList = List.empty(growable: true);
+  List<poojaitemlist> ServicesList = List.empty(growable: true);
 
   Map? mapresponse;
   Future _apicall() async {
@@ -61,7 +66,11 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
       mapresponse = json.decode(response1.body);
       setState(() {
         loader = false;
-        ServicesList = mapresponse!['data'];
+         ServicesList = [];
+        for (int n = 0; n < mapresponse!['data'].length; n++) {
+          ServicesList.add(poojaitemlist(
+              poojaobject: mapresponse!['data'][n], selected: false,));
+        }
       });
 
       return mapresponse;
@@ -110,7 +119,19 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
       print(response1.body);
     }
   }
+  List sharelist=[];
+  void shareListToWhatsApp(List items) async {
+  String listText = items.join("\n");
+  String message = Uri.encodeComponent("Here is my list:\n\n$listText");
+  String url = "https://wa.me/?text=$message";
 
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    print("Could not open WhatsApp");
+  }
+}
+  List Selected_ServicesList = List.empty(growable: true);
   bool loader = false;
   TextEditingController searchcontroller = TextEditingController();
   @override
@@ -134,6 +155,44 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: SafeArea(
         child: Scaffold(
+            floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () async {
+              for(int n=0;n<Selected_ServicesList.length;n++){
+                sharelist.add("${n+1}. ${Selected_ServicesList[n]['name']} Qty-${Selected_ServicesList[n]['quantity'].toString()+" "+Selected_ServicesList[n]['quantityType'].toString()}");
+              }
+              if (sharelist.isNotEmpty) {
+                shareListToWhatsApp(sharelist);
+                // Get.to(const PriestsWidget(), arguments: Selected_ServicesList);
+              }sharelist=[];
+            },
+            label: SizedBox(
+              width: screensize.width * 0.8,
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  'Share',
+                  style: FlutterFlowTheme.of(context).titleLarge.override(
+                        fontFamily: 'Inter Tight',
+                        color: Selected_ServicesList.isEmpty
+                            ? const Color.fromARGB(255, 209, 209, 209)
+                            : const Color(0xFFD66223),
+                        fontSize: 16.0,
+                        letterSpacing: 0.0,
+                      ),
+                ),
+              ),
+            ),
+            backgroundColor: const Color(0xFFFFF6EA),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                    width: 2,
+                    color: Selected_ServicesList.isEmpty
+                        ? const Color.fromARGB(255, 209, 209, 209)
+                        : const Color(0xFFD66223))),
+          ),
           key: scaffoldKey,
           backgroundColor: Colors.white,
           appBar: AppBar(
@@ -262,40 +321,157 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
                                       10.0, 10.0, 10.0, 10.0),
                                   child: Container(
                                     width: screensize.width * 0.84,
-                                    child: Column(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          ServicesList[index]['name'],
-                                          textAlign: TextAlign.start,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                color: Colors.black,
-                                                fontFamily: 'Inter',
-                                                fontSize: 16.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.w500,
+                                        Container(
+                                          width: screensize.width * 0.54,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                ServicesList[index].poojaobject['name'],
+                                                textAlign: TextAlign.start,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          color: Colors.black,
+                                                          fontFamily: 'Inter',
+                                                          fontSize: 16.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
                                               ),
-                                        ),
-                                        Text(
-                                          ServicesList[index]['description']==null?"": ServicesList[index]['description']=="string"?"": ServicesList[index]['description'],
-                                          textAlign: TextAlign.start,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: FlutterFlowTheme.of(context)
-                                              .bodyMedium
-                                              .override(
-                                                color: Colors.black,
-                                                fontFamily: 'Inter',
-                                                fontSize: 12.0,
-                                                letterSpacing: 0.0,
-                                                fontWeight: FontWeight.normal,
+                                              Text(
+                                               ServicesList[index].poojaobject['quantity']
+                                                  .toString() +" "+
+                                              ServicesList[index].poojaobject
+                                                  ['quantityType'].toString(),
+                                                textAlign: TextAlign.start,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          color: Colors.black,
+                                                          fontFamily: 'Inter',
+                                                          fontSize: 12.0,
+                                                          letterSpacing: 0.0,
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                        ),
                                               ),
+                                            ],
+                                          ),
                                         ),
+                                      FFButtonWidget(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      ServicesList[index]
+                                                              .selected =
+                                                          !ServicesList[index]
+                                                              .selected;
+                                                      if (Selected_ServicesList
+                                                          .isNotEmpty) {
+                                                        print("---0");
+                                                        if (ServicesList[index]
+                                                                .selected ==
+                                                            false) {
+                                                          print("-----0");
+                                                          for (int n = 0;
+                                                              n <
+                                                                  Selected_ServicesList
+                                                                      .length;
+                                                              n++) {
+                                                            print("-----00");
+                                                            if (ServicesList[
+                                                                        index]
+                                                                    .poojaobject ==
+                                                                Selected_ServicesList[
+                                                                    n]) {
+                                                              Selected_ServicesList
+                                                                  .removeAt(n);
+                                                            }
+                                                          }
+                                                        } else {
+                                                          print("-0");
+                                                          Selected_ServicesList
+                                                              .add(ServicesList[
+                                                                      index]
+                                                                  .poojaobject);
+                                                        }
+                                                      } else {
+                                                        print("--0");
+                                                        Selected_ServicesList
+                                                            .add(ServicesList[
+                                                                    index]
+                                                                .poojaobject);
+                                                      }
+
+                                                      print(
+                                                          "Selected service list ${Selected_ServicesList.length} $Selected_ServicesList");
+                                                    });
+
+                                                    //  Get.to(PriestsWidget(),arguments: ServicesList[index]);
+                                                  },
+                                                  text: ServicesList[index]
+                                                          .selected
+                                                      ? '-'
+                                                      : '+',
+                                                  options: FFButtonOptions(
+                                                    height: 40.0,
+                                                    padding:
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(0.0, 0.0,
+                                                            00.0, 3.0),
+                                                    iconPadding:
+                                                        const EdgeInsetsDirectional
+                                                            .fromSTEB(
+                                                            0.0, 0.0, 0.0, 0.0),
+                                                    color: ServicesList[index]
+                                                            .selected
+                                                        ? const Color(
+                                                            0xFFD66223)
+                                                        : const Color(
+                                                            0xFFFFF6EA),
+                                                    textStyle: FlutterFlowTheme
+                                                            .of(context)
+                                                        .titleSmall
+                                                        .override(
+                                                          fontFamily:
+                                                              'Inter Tight',
+                                                          color: ServicesList[
+                                                                      index]
+                                                                  .selected
+                                                              ? const Color(
+                                                                  0xFFFFF6EA)
+                                                              : const Color(
+                                                                  0xFFD66223),
+                                                          fontSize: 40.0,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          letterSpacing: 0.0,
+                                                        ),
+                                                    elevation: 0.0,
+                                                    borderSide:
+                                                        const BorderSide(
+                                                      color: Color(0xFFD66223),
+                                                      width: 2.0,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8.0),
+                                                  ),
+                                                ),
                                       ],
                                     ),
                                   ),

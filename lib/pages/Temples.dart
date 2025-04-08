@@ -41,7 +41,7 @@ class _TemplesWidgetState extends State<TemplesWidget> {
     super.initState();
     // _apicall();
 
-    _configapicall("");
+    _configapicall();
 
     scrollcontroller1.addListener(() {
       print("end of the list");
@@ -50,7 +50,7 @@ class _TemplesWidgetState extends State<TemplesWidget> {
         if (finaltemplelist.length < 60) {
           if (tokenispresent) {
             print("calling temple api again");
-            _configapicall(searchcontroller.text);
+            _configapicall();
           }
         }
       }
@@ -102,7 +102,7 @@ class _TemplesWidgetState extends State<TemplesWidget> {
   // }
 
   Map? configmapresponse;
-  _configapicall(String keyword) async {
+  _configapicall() async {
     setState(() {
       loader = true;
     
@@ -124,7 +124,7 @@ class _TemplesWidgetState extends State<TemplesWidget> {
 
         configmapresponse!['temples_around_me_radius'];
         currentPosition(
-            configmapresponse!['temples_around_me_radius'], keyword);
+            );
       });
 
       return mapresponse;
@@ -133,23 +133,21 @@ class _TemplesWidgetState extends State<TemplesWidget> {
         loader = false;
       });
       currentPosition(
-          configmapresponse == null
-              ? 10000
-              : configmapresponse!['temples_around_me_radius'],
-          keyword);
+         );
       print(response1.statusCode);
       print('fetch unsuccessful');
       print(response1.body);
     }
   }
-
-  Future<Position> currentPosition(String radius, String keyword) async {
+  bool locationavailable=false;
+  currentPosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
     // Checking if location services are enabled
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+    
       return Future.error('Location services are disabled');
     }
 
@@ -158,21 +156,37 @@ class _TemplesWidgetState extends State<TemplesWidget> {
     if (permission == LocationPermission.denied) {
       // Requesting permission if it is denied
       permission = await Geolocator.requestPermission();
+      
       if (permission == LocationPermission.denied) {
-        return Future.error("Location permission denied");
+      permission = await Geolocator.requestPermission();
+     setState(() {
+       loader = false;
+       locationavailable=false;
+          finaltemplelist = [];
+    });
       }
+       setState(() {
+       loader = false;
+       locationavailable=false;
+          finaltemplelist = [];
+    });
+    
     }
 
     // Handling the case where permission is permanently denied
     if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied');
+     permission = await Geolocator.requestPermission();
+      
     }
 
     // Getting the current position of the user
     Position position = await Geolocator.getCurrentPosition();
     print(position.latitude);
+    setState(() {
+      locationavailable=true;
+    });
     _templesbasedonlocationapicall(
-        position.latitude, position.longitude, radius, keyword);
+        position.latitude, position.longitude);
     return position;
   }
 
@@ -181,7 +195,7 @@ class _TemplesWidgetState extends State<TemplesWidget> {
   String Pagenationtoken = "";
   bool tokenispresent = true;
   _templesbasedonlocationapicall(
-      double lat, double long, String radius, String keyword) async {
+      double lat, double long,) async {
     setState(() {
       loader = true;
     });
@@ -194,10 +208,10 @@ class _TemplesWidgetState extends State<TemplesWidget> {
     var userid = sharedPreferences.getInt("userid");
     var name = sharedPreferences.getString("name");
     print(
-        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&radius=$radius&type=hindu_temple&keyword=$keyword&pagetoken=$Pagenationtoken&key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE");
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&radius=$_discreteValue&type=hindu_temple&keyword=${searchcontroller.text.length>=3?searchcontroller.text:""}&pagetoken=$Pagenationtoken&key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE");
     response1 = await http.get(
       Uri.parse(
-          "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&radius=$radius&type=hindu_temple&keyword=$keyword&pagetoken=$Pagenationtoken&key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE"),
+          "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&radius=$_discreteValue&type=hindu_temple&keyword=${searchcontroller.text.length>=3?searchcontroller.text:""}&pagetoken=$Pagenationtoken&key=AIzaSyBC_WlEM3KJ0iga1292EjUx6k-Ah_ws5FE"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",
@@ -206,7 +220,8 @@ class _TemplesWidgetState extends State<TemplesWidget> {
     );
     if (response1.statusCode == 200) {
       mapresponse = json.decode(response1.body);
-      if (Pagenationtoken.length == 0 || keyword.length > 0) {
+      print("Pagenationtoken lenght ${Pagenationtoken}");
+      if (Pagenationtoken.length == 0 && searchcontroller.text.length >= 0) {
         setState(() {
           loader = false;
           finaltemplelist = [];
@@ -375,26 +390,26 @@ class _TemplesWidgetState extends State<TemplesWidget> {
                       context: context,
                       builder: (BuildContext context) {
                         return popupwithcustombuttons(
-                          onPressedforbutton1: () {
-                            setState(() {
-                              _discreteValue = 5000;
-                            });
-                            currentPosition(
-                                configmapresponse!['temples_around_me_radius'],
-                                "");
+                          onPressedforbutton1: () async{
+                          
+                           
                             this.setState(() {
                               Pagenationtoken = "";
                               loader = true;
+                               _discreteValue = 5000;
                             });
+                             currentPosition(
+                               );
                             Get.back();
                           },
-                          onPressedforbutton2: () {
-                            currentPosition(_discreteValue.toString(), "");
+                          onPressedforbutton2: () async{
+                           
                             this.setState(() {
                               Pagenationtoken = "";
-                              _discreteValue = 5000;
+                            
                               loader = true;
                             });
+                             currentPosition();
                             Get.back();
                           },
                           content: Container(
@@ -447,9 +462,13 @@ class _TemplesWidgetState extends State<TemplesWidget> {
                                                       'temples_around_me_filter_config']
                                                   ['max_radius']),
                                           divisions: 1000,
-                                          label: '${_discreteValue.round()}',
+                                          label: '${_discreteValue/1000.round()}km',
                                           onChanged: (double value) {
-                                            setState(() {
+                                        setState(() {
+                                              _discreteValue = value;
+                                            });
+
+                                            this.setState(() {
                                               _discreteValue = value;
                                             });
                                           },
@@ -502,18 +521,18 @@ class _TemplesWidgetState extends State<TemplesWidget> {
                               Pagenationtoken="";
                             });
                               
-                              _configapicall(value);
-                            } else {
+                              _configapicall();
+                            } else if(value.length == 0) {
                               setState(() {
                               Pagenationtoken="";
                             });
-                              _configapicall("");
+                              _configapicall();
                             }
                           },
                           decoration: InputDecoration(
                             filled: true,
                             fillColor: Colors.white,
-                            labelText: "Search Pooja item",
+                            labelText: "Search Temple",
                             labelStyle: const TextStyle(
                                 color: Color.fromARGB(255, 204, 204, 204)),
                             // hintText: "Password",
@@ -542,12 +561,18 @@ class _TemplesWidgetState extends State<TemplesWidget> {
                     finaltemplelist.isEmpty
                         ? loader
                             ? Container()
-                            : SizedBox(
+                            : locationavailable?     SizedBox(
                                 height: 200,
                                 width: double.infinity,
                                 child: const Center(
                                     child: Text(
                                         "No Temple(s) are available near you")),
+                              ):SizedBox(
+                                height: 200,
+                                width: double.infinity,
+                                child: Center(
+                                    child: const Text(
+                                        "Location is not provided to display temples near you")),
                               )
                         : Container(
                             // color: Colors.blue,

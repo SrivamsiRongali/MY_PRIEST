@@ -92,6 +92,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
             // for(int n=0; n < listresponse.length ; n++){
       //   expandlist.add(false);
       // }
+       currentPosition();
       return listresponse;
     } else {
       setState(() {
@@ -121,6 +122,9 @@ class _HomePageWidgetState extends State<HomePageWidget> {
       if (permission == LocationPermission.denied) {
         return Future.error("Location permission denied");
       }
+        Position position = await Geolocator.getCurrentPosition();
+    print(position.latitude);
+    _panchangapicall(DateTime.now(),position.latitude,position.longitude);
     }
 
     // Handling the case where permission is permanently denied

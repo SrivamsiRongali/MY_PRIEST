@@ -41,6 +41,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
   var priestandservicedata = Get.arguments;
   @override
   void initState() {
+    _apicall();
     super.initState();
     razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, handlePaymentSuccessResponse);
     razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, handlePaymentErrorResponse);
@@ -372,15 +373,20 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
                                                                   [
                                                                   'secondary_text']
                                                               .split(','));
+                                                              print("address data $addressdatafromgoogle");
                                                       _model.statetextController6
                                                               .text =
-                                                          addressdatafromgoogle[
+                                                        addressdatafromgoogle
+                                                                      .length <=2? addressdatafromgoogle.first :   addressdatafromgoogle[
                                                               addressdatafromgoogle
                                                                       .length -
                                                                   2];
                                                       _model.citytextController5
                                                               .text =
-                                                          addressdatafromgoogle[
+                                                         addressdatafromgoogle
+                                                                      .length <=3?  value[index][
+                                                              'structured_formatting']
+                                                          ['main_text'] : addressdatafromgoogle[
                                                               addressdatafromgoogle
                                                                       .length -
                                                                   3];
@@ -390,6 +396,7 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
                                                       addressdatafromgoogle
                                                           .removeRange(
                                                               addressdatafromgoogle
+                                                                      .length <=3? 0 : addressdatafromgoogle
                                                                       .length -
                                                                   3,
                                                               addressdatafromgoogle
@@ -494,26 +501,8 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
         await SharedPreferences.getInstance();
     sharedPreferences.setString("servicetime", "$date,$time");
     var token = sharedPreferences.getString("token");
-    http.Response response = await http.post(
-        Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings"),
-        headers: {
-          "accept": "*/*",
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
-        },
-        body: data);
 
-    if (response.statusCode == 200) {
-      mapresponse = json.decode(response.body);
-      setState(() {
-        loader = false;
-        bookingid=mapresponse['id'];
-      });
-      
 
-      print('Booking successfull');
-
-      print(response.body);
  http.Response response2 = await http.post(
         Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings/razor-pay"),
         headers: {
@@ -527,31 +516,11 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
       mapresponse2 = json.decode(response2.body);
       setState(() {
         loader = false;
+         bookingid=int.parse(mapresponse2['receipt']);
       });
 
-      print('Booking successfull');
+      print('post razorpay response ${response2.body}');
 
-      print(response2.body);
-//  Get.offAll(
-//       SuccessWidget(),
-//     );
-// {
-//   "amount": 9900,
-//   "attempts": 0,
-//   "currency": "INR",
-//   "entity": "order",
-//   "id": "order_QAXvPRQcDvVlvy",
-//   "notes": {
-//     "key1": "JJJK TrustKotla Marg, Rouse Avenue, Mata Sundari Railway Colony Mandi House Delhi India",
-//     "key2": "value2"
-//   },
-//   "receipt": "89",
-//   "status": "created",
-//   "amount_due": 9900,
-//   "amount_paid": 0,
-//   "created_at": 1742801525,
-//   "offer_id": null
-// }
 print('''
         'key' :'$Razorpaykey'
         'amount':${ mapresponse2['amount']}, //in paise.
@@ -588,11 +557,9 @@ print('''
       setState(() {
         loader = false;
       });
-
-      print(" data =$data");
       print('fail');
       Get.defaultDialog(
-        title: "Unable book ${response.body}",
+        title: "Unable book ${response2.body}",
         titleStyle: TextStyle(color: Colors.red),
         content: Padding(
           padding: const EdgeInsets.only(left: 10, right: 10),
@@ -614,42 +581,9 @@ print('''
           ),
         ],
       );
-      print(response.statusCode);
-      print(response.body);
-    }
-    } else {
-      setState(() {
-        loader = false;
-      });
 
-      print(" data =$data");
-      print('fail');
-      Get.defaultDialog(
-        title: "Unable book ${response.body}",
-        titleStyle: TextStyle(color: Colors.red),
-        content: Padding(
-          padding: const EdgeInsets.only(left: 10, right: 10),
-          child: Text("Please try after some time",
-              style: TextStyle(color: Colors.black)),
-        ),
-        actions: [
-          MaterialButton(
-            color: Color.fromARGB(255, 255, 123, 0),
-            onPressed: () {
-              Get.back();
-            },
-            child: Text(
-              'ok',
-              style: TextStyle(
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      );
-      print(response.statusCode);
-      print(response.body);
     }
+  
   }
     Future updatebookingstatus() async {
     setState(() {
@@ -667,6 +601,7 @@ print('''
         await SharedPreferences.getInstance();
   
     var token = sharedPreferences.getString("token");
+    print("https://${AppConstants.ipaddress.ipaddress}/api/bookings/payment/$bookingid");
     http.Response response = await http.put(
         Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/bookings/payment/$bookingid"),
         headers: {
@@ -1486,7 +1421,7 @@ print('''
                               decoration: InputDecoration(
                                 suffixIcon: Icon(Icons.search),
                                 isDense: true,
-                                labelText: 'Address Line 2',
+                                labelText: 'Search your building',
                                 labelStyle: FlutterFlowTheme.of(context)
                                     .labelMedium
                                     .override(
@@ -1709,6 +1644,7 @@ print('''
                                       n < priestandservicedata[0].length;
                                       n++) {
                                        servicename=servicename+"${servicename.isEmpty?'':','}"+priestandservicedata[0][n]['name'];
+                                       print("service id ${priestandservicedata[0][n]['id']}");
                                     serviceId
                                         .add(priestandservicedata[0][n]['id']);
                                   }
@@ -1730,12 +1666,28 @@ print('''
                                             _model.dropDownValue.toString());
                                     }
                                     else{
+                                      setState(() {
+                                        loader=false;
+                                      });
+                                      print("service id $serviceId");
                                       Get.defaultDialog(
                                         title: "",
-                                        content: Text("Unable make bookings right now please try again later")
+                                        content: Text("Unable make bookings right now please try again later"),
+                                        actions: [MaterialButton(onPressed: (){Get.back();},child: Text("Ok"),)]
                                       );
                                     }
                                     
+                                  }
+                                  else{
+                                     setState(() {
+                                        loader=false;
+                                      });
+                                 
+                                      Get.defaultDialog(
+                                        title: "",
+                                        content: Text("Unable make bookings right now please try again later"),
+                                        actions: [MaterialButton(onPressed: (){Get.back();},child: Text("Ok"),)]
+                                      );
                                   }
                                 }
                               }
