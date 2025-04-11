@@ -377,14 +377,14 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
                                                       _model.statetextController6
                                                               .text =
                                                         addressdatafromgoogle
-                                                                      .length <=2? addressdatafromgoogle.first :   addressdatafromgoogle[
+                                                                      .length <2? addressdatafromgoogle.first :   addressdatafromgoogle[
                                                               addressdatafromgoogle
                                                                       .length -
                                                                   2];
                                                       _model.citytextController5
                                                               .text =
                                                          addressdatafromgoogle
-                                                                      .length <=3?  value[index][
+                                                                      .length <3?  value[index][
                                                               'structured_formatting']
                                                           ['main_text'] : addressdatafromgoogle[
                                                               addressdatafromgoogle
@@ -501,6 +501,8 @@ class _ConfirmationWidgetState extends State<ConfirmationWidget> {
         await SharedPreferences.getInstance();
     sharedPreferences.setString("servicetime", "$date,$time");
     var token = sharedPreferences.getString("token");
+    var email=sharedPreferences.getString("email");
+    var mobilenumber=sharedPreferences.getString("mobilenumber");
 
 
  http.Response response2 = await http.post(
@@ -532,8 +534,8 @@ print('''
         'description': 'Fine T-Shirt',
         'timeout': '600', // in seconds
         'prefill': {
-          'contact': '8919806771',
-          'email': 'rongalisrivamsi@gmail.com'
+          'contact': $mobilenumber,
+          'email': $email
         }
       ''');
       razorpay.open({
@@ -549,8 +551,8 @@ print('''
         'description': 'Fine T-Shirt',
         'timeout': 600, // in seconds
         'prefill': {
-          'contact': '8919806771',
-          'email': 'rongalisrivamsi@gmail.com'
+          'contact': '$mobilenumber',
+          'email': '$email'
         }
       });
     } else {

@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:my_priest/database/pojoclass.dart';
 import 'package:my_priest/index.dart';
 import 'package:my_priest/main.dart';
 import 'package:my_priest/pages/login_signup/signup2.dart';
@@ -12,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../../database/dbhelper.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../shared.dart';
 import 'signup1.dart';
@@ -26,6 +29,7 @@ class signin extends StatefulWidget {
 class _signinState extends State<signin> {
   bool securetext = true;
   bool visibility = true;
+  bool loader =false;
   @override
   void initState() {
     // TODO: implement initState
@@ -64,90 +68,158 @@ class _signinState extends State<signin> {
               elevation: 0,
               backgroundColor: Colors.transparent,
             ),
-            body: Container(
-              // decoration: BoxDecoration(
-              //   image: DecorationImage(image: AssetImage("assets/images/Login_background.png",)),
-              // ),
-
-              child: SingleChildScrollView(
-                child: Stack(
-                  children: [
-                    Image.asset(
-                      "assets/images/Login_background.png",
-                      fit: BoxFit.fill,
-                      width: screenwidth,
-                      height: screenheight - statusBarHeight,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20, 50, 20, 0),
-                      child: Form(
-                        key: formkey,
-                        child: Column(
-                          children: [
-                            // Image.asset('images/priest logo.png'),
-                            Padding(
-                              padding: EdgeInsetsDirectional.fromSTEB(
-                                  0.0, 30.0, 0.0, 23.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8.0),
-                                child: Image.asset(
-                                  'assets/images/Group.png',
-                                  fit: BoxFit.cover,
+            body: ModalProgressHUD(
+              inAsyncCall: loader,
+               progressIndicator: CircularProgressIndicator(
+                color: Color.fromARGB(255, 214, 98, 35),
+              ),
+              child: Container(
+                // decoration: BoxDecoration(
+                //   image: DecorationImage(image: AssetImage("assets/images/Login_background.png",)),
+                // ),
+              
+                child: SingleChildScrollView(
+                  child: Stack(
+                    children: [
+                      Image.asset(
+                        "assets/images/Login_background.png",
+                        fit: BoxFit.fill,
+                        width: screenwidth,
+                        height: screenheight - statusBarHeight,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(20, 50, 20, 0),
+                        child: Form(
+                          key: formkey,
+                          child: Column(
+                            children: [
+                              // Image.asset('images/priest logo.png'),
+                              Padding(
+                                padding: EdgeInsetsDirectional.fromSTEB(
+                                    0.0, 30.0, 0.0, 23.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.asset(
+                                    'assets/images/Group.png',
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'Login',
-                                  style: TextStyle(
-                                      fontSize: 24,
-                                      color: Color.fromARGB(255, 200, 4, 50),
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ),
-                            ),
-
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 20),
-                              child: Align(
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    'Please login to continue',
-                                    style: FlutterFlowTheme.of(context)
-                                        .bodyMedium
-                                        .override(
-                                          fontFamily: 'Inter',
-                                          color: Colors.black,
-                                          letterSpacing: 0.0,
-                                          fontSize: 14,
-                                          lineHeight: 1.2,
-                                        ),
-                                  )),
-                            ),
-
-                            Form(
-                              key: emailformkey,
-                              child: Padding(
+                                    'Login',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        color: Color.fromARGB(255, 200, 4, 50),
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                              ),
+              
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 20),
+                                child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Please login to continue',
+                                      style: FlutterFlowTheme.of(context)
+                                          .bodyMedium
+                                          .override(
+                                            fontFamily: 'Inter',
+                                            color: Colors.black,
+                                            letterSpacing: 0.0,
+                                            fontSize: 14,
+                                            lineHeight: 1.2,
+                                          ),
+                                    )),
+                              ),
+              
+                              Form(
+                                key: emailformkey,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: TextFormField(
+                                    controller: emailcontroller,
+                                    keyboardType: TextInputType.emailAddress,
+                                    cursorColor: Colors.black,
+                                    decoration: InputDecoration(
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      hoverColor: Colors.white,
+                                
+                                      labelText: "Email Address",
+                                      labelStyle: TextStyle(
+                                          color:
+                                              Color.fromARGB(255, 204, 204, 204)),
+                                      // hintText: "Enter Email",
+                                      hintStyle:
+                                          TextStyle(fontWeight: FontWeight.bold),
+                                      border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide(
+                                              color: Color.fromARGB(
+                                                  255, 232, 232, 232),
+                                              width: 0.1)),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(5),
+                                          borderSide: BorderSide(
+                                              color:
+                                                  Color.fromARGB(255, 214, 98, 35),
+                                              width: 1)),
+                                      prefixIcon: Icon(
+                                        Icons.mail,
+                                        color: Color.fromARGB(255, 204, 204, 204),
+                                      ),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(visibility ? null : Icons.clear),
+                                        onPressed: () {
+                                          emailcontroller.clear();
+                                        },
+                                        color: Color.fromARGB(255, 204, 204, 204),
+                                      ),
+                                    ),
+                                    textInputAction: TextInputAction.next,
+                                    // onEditingComplete: () {
+                                    //   FocusScope.of(context).requestFocus(passordfocus);
+                                    // },
+                                    maxLines: 1,
+                                    validator: (value) {
+                                      if (value!.isEmpty ||
+                                          !RegExp("^[a-zA-Z0-9+_.-]+@[a-z-A-Z0-9]+[.][a-zA-Z]+[a-zA-Z]")
+                                              .hasMatch(value)) {
+                                        setState(() {
+                                          visibility = false;
+                                        });
+                                        if (value.isNotEmpty) {
+                                          return ('Please enter valid email id ');
+                                        }
+                                        return "Enter email id";
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+              
+                              Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: TextFormField(
-                                  controller: emailcontroller,
-                                  keyboardType: TextInputType.emailAddress,
                                   cursorColor: Colors.black,
+                                  controller: passwordcontroller,
+                                  keyboardType: TextInputType.visiblePassword,
                                   decoration: InputDecoration(
                                     filled: true,
                                     fillColor: Colors.white,
-                                    hoverColor: Colors.white,
-                              
-                                    labelText: "Email Address",
+                                    labelText: "Password",
                                     labelStyle: TextStyle(
                                         color:
                                             Color.fromARGB(255, 204, 204, 204)),
-                                    // hintText: "Enter Email",
-                                    hintStyle:
-                                        TextStyle(fontWeight: FontWeight.bold),
+                                    // hintText: "Password",
+                                    // hintStyle: TextStyle(fontWeight: FontWeight.bold),
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(5),
                                         borderSide: BorderSide(
@@ -161,379 +233,319 @@ class _signinState extends State<signin> {
                                                 Color.fromARGB(255, 214, 98, 35),
                                             width: 1)),
                                     prefixIcon: Icon(
-                                      Icons.mail,
+                                      Icons.lock,
                                       color: Color.fromARGB(255, 204, 204, 204),
                                     ),
                                     suffixIcon: IconButton(
-                                      icon: Icon(visibility ? null : Icons.clear),
+                                      icon: Icon(securetext
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined),
                                       onPressed: () {
-                                        emailcontroller.clear();
+                                        setState(() {
+                                          securetext = !securetext;
+                                        });
                                       },
                                       color: Color.fromARGB(255, 204, 204, 204),
                                     ),
                                   ),
-                                  textInputAction: TextInputAction.next,
-                                  // onEditingComplete: () {
-                                  //   FocusScope.of(context).requestFocus(passordfocus);
-                                  // },
+                                  obscureText: securetext,
+                                  obscuringCharacter: "*",
                                   maxLines: 1,
                                   validator: (value) {
-                                    if (value!.isEmpty ||
-                                        !RegExp("^[a-zA-Z0-9+_.-]+@[a-z-A-Z0-9]+[.][a-zA-Z]+[a-zA-Z]")
-                                            .hasMatch(value)) {
-                                      setState(() {
-                                        visibility = false;
-                                      });
-                                      if (value.isNotEmpty) {
-                                        return ('Please enter valid email id ');
-                                      }
-                                      return "enter email id";
+                                    if (value!.isEmpty) {
+                                      return "required";
+                                    } else if (value.length < 8) {
+                                      return "Enter valid Password";
                                     } else {
                                       return null;
                                     }
                                   },
                                 ),
                               ),
-                            ),
-
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: TextFormField(
-                                cursorColor: Colors.black,
-                                controller: passwordcontroller,
-                                keyboardType: TextInputType.visiblePassword,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  labelText: "Password",
-                                  labelStyle: TextStyle(
-                                      color:
-                                          Color.fromARGB(255, 204, 204, 204)),
-                                  // hintText: "Password",
-                                  // hintStyle: TextStyle(fontWeight: FontWeight.bold),
-                                  border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      borderSide: BorderSide(
-                                          color: Color.fromARGB(
-                                              255, 232, 232, 232),
-                                          width: 0.1)),
-                                  focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                      borderSide: BorderSide(
-                                          color:
-                                              Color.fromARGB(255, 214, 98, 35),
-                                          width: 1)),
-                                  prefixIcon: Icon(
-                                    Icons.lock,
-                                    color: Color.fromARGB(255, 204, 204, 204),
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(securetext
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined),
-                                    onPressed: () {
-                                      setState(() {
-                                        securetext = !securetext;
-                                      });
-                                    },
-                                    color: Color.fromARGB(255, 204, 204, 204),
+              
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: MaterialButton(
+                                  onPressed: () {
+                                     if (emailformkey.currentState!
+                                            .validate()){
+                                    if (formkey.currentState!.validate()) {
+                                      String email = emailcontroller.text;
+                                      String password = passwordcontroller.text;
+                                      userlogin(email, password);
+                                    } else {
+                                      print('error');
+                                    }
+                                  }},
+                                  color: Color.fromARGB(255, 214, 98, 35),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 19),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      // ignore: prefer_const_literals_to_create_immutables
+                                      children: [
+                                        Text('Login',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600)),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                obscureText: securetext,
-                                obscuringCharacter: "*",
-                                maxLines: 1,
-                                validator: (value) {
-                                  if (value!.isEmpty) {
-                                    return "required";
-                                  } else if (value.length < 8) {
-                                    return "enter valid Password";
-                                  } else {
-                                    return null;
-                                  }
-                                },
                               ),
-                            ),
-
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: MaterialButton(
-                                onPressed: () {
-                                  if (formkey.currentState!.validate()) {
-                                    String email = emailcontroller.text;
-                                    String password = passwordcontroller.text;
-                                    userlogin(email, password);
-                                  } else {
-                                    print('error');
-                                  }
-                                },
-                                color: Color.fromARGB(255, 214, 98, 35),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5)),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 19),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    // ignore: prefer_const_literals_to_create_immutables
-                                    children: [
-                                      Text('Login',
+              
+                              Row(
+                                children: [
+                                  TextButton(
+                                      onPressed: () {
+                                        if (emailformkey.currentState!
+                                            .validate()) {
+                                          forgotpassword(emailcontroller.text);
+                                        }
+                                      },
+                                      child: Text(
+                                        'Forgot Password?',
+                                        style: FlutterFlowTheme.of(context)
+                                            .bodyMedium
+                                            .override(
+                                              fontFamily: 'Inter',
+                                              color: Color.fromARGB(
+                                                  255, 214, 98, 35),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.0,
+                                              lineHeight: 1.2,
+                                            ),
+                                      )),
+                                ],
+                              ),
+              
+                              // Row(
+                              //   mainAxisAlignment: MainAxisAlignment.center,
+                              //   children: [
+                              //     Container(
+                              //       height: screenheight * 0.082,
+                              //       width: screenwidth * 0.165,
+                              //       child: MaterialButton(
+                              //         onPressed: () async {
+                              //           //googleLogin();
+                              //         },
+                              //         color: Colors.white,
+                              //         shape: RoundedRectangleBorder(
+                              //             borderRadius: BorderRadius.circular(5)),
+                              //         child: Padding(
+                              //           padding: EdgeInsets.symmetric(vertical: 20),
+                              //           child: Row(
+                              //             mainAxisAlignment: MainAxisAlignment.center,
+                              //             // ignore: prefer_const_literals_to_create_immutables
+                              //             children: [
+                              //               Container(
+                              //                 height: screenheight * 0.052,
+                              //                 width: screenwidth * 0.075,
+                              //                 child: SvgPicture.asset(
+                              //                   'images/Group.svg',
+                              //                 ),
+                              //               )
+                              //             ],
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     ),
+                              //     SizedBox(
+                              //       width: screenwidth * 0.02,
+                              //     ),
+                              //     Container(
+                              //       height: screenheight * 0.082,
+                              //       width: screenwidth * 0.165,
+                              //       child: MaterialButton(
+                              //         onPressed: () async {
+                              //           //googleLogin();
+                              //         },
+                              //         color: Colors.white,
+                              //         shape: RoundedRectangleBorder(
+                              //             borderRadius: BorderRadius.circular(5)),
+                              //         child: Padding(
+                              //           padding: EdgeInsets.symmetric(vertical: 20),
+                              //           child: Row(
+                              //             mainAxisAlignment: MainAxisAlignment.center,
+                              //             // ignore: prefer_const_literals_to_create_immutables
+                              //             children: [
+                              //               Container(
+                              //                   height: screenheight * 0.052,
+                              //                   width: screenwidth * 0.075,
+                              //                   child:
+                              //                       Image.asset('images/Facebook-logo.png')
+                              //                   // SvgPicture.asset(
+                              //                   //   'images/f_logo_RGB-Blue_1441.svg',
+                              //                   //   height: 25,
+                              //                   //   width: 25,
+                              //                   // )
+                              //                   )
+                              //             ],
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     ),
+                              //     SizedBox(
+                              //       width: screenwidth * 0.02,
+                              //     ),
+                              //     Container(
+                              //       height: screenheight * 0.082,
+                              //       width: screenwidth * 0.165,
+                              //       child: MaterialButton(
+                              //         onPressed: () async {
+                              //           //googleLogin();
+                              //         },
+                              //         color: Colors.white,
+                              //         shape: RoundedRectangleBorder(
+                              //             borderRadius: BorderRadius.circular(5)),
+                              //         child: Padding(
+                              //           padding: EdgeInsets.symmetric(vertical: 20),
+                              //           child: Row(
+                              //             mainAxisAlignment: MainAxisAlignment.center,
+                              //             // ignore: prefer_const_literals_to_create_immutables
+                              //             children: [
+                              //               Container(
+                              //                 height: screenheight * 0.052,
+                              //                 width: screenwidth * 0.075,
+                              //                 child: SvgPicture.asset(
+                              //                   'images/apple-black 1.svg',
+                              //                 ),
+                              //               )
+                              //             ],
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     ),
+                              //     SizedBox(
+                              //       width: screenwidth * 0.02,
+                              //     ),
+                              //     Container(
+                              //       height: screenheight * 0.082,
+                              //       width: screenwidth * 0.165,
+                              //       child: MaterialButton(
+                              //         onPressed: () async {
+                              //           //googleLogin();
+                              //         },
+                              //         color: Colors.white,
+                              //         shape: RoundedRectangleBorder(
+                              //             borderRadius: BorderRadius.circular(5)),
+                              //         child: Padding(
+                              //           padding: EdgeInsets.symmetric(vertical: 20),
+                              //           child: Row(
+                              //             mainAxisAlignment: MainAxisAlignment.center,
+                              //             // ignore: prefer_const_literals_to_create_immutables
+                              //             children: [
+                              //               Container(
+                              //                 height: screenheight * 0.052,
+                              //                 width: screenwidth * 0.075,
+                              //                 child: SvgPicture.asset(
+                              //                   'images/twitter-color 1.svg',
+                              //                 ),
+                              //               ),
+                              //             ],
+                              //           ),
+                              //         ),
+                              //       ),
+                              //     ),
+                              //   ],
+                              // ),
+                              // SizedBox(
+                              //   height: screenheight * 0.012,
+                              // ),
+              
+                              // Padding(
+                              //   padding:
+                              //       const EdgeInsets.only(top: 10, bottom: 20),
+                              //   child: Image.asset(
+                              //     "assets/images/Group 4.png",
+                              //     fit: BoxFit.fitWidth,
+                              //   ),
+                              // ),
+              
+                              // MaterialButton(
+                              //   onPressed: () async {
+                              //     Get.defaultDialog(
+                              //         title: "Coming Soon",
+                              //         titlePadding: EdgeInsets.only(top: 10),
+                              //         content: Text(""),
+                              //         actions: [
+                              //           MaterialButton(
+                              //             color: Color.fromARGB(
+                              //                 255, 214, 98, 35),
+                              //             onPressed: () {
+                              //               Get.back();
+                              //             },
+                              //             child: Text(
+                              //               'OK',
+                              //               style: TextStyle(
+                              //                   color: Colors.white),
+                              //             ),
+                              //           )
+                              //         ]);
+                              //     //googleLogin();
+                              //   },
+                              //   color: Colors.white,
+                              //   elevation: 0,
+                              //   shape: RoundedRectangleBorder(
+                              //       borderRadius: BorderRadius.circular(5)),
+                              //   child: Padding(
+                              //     padding: EdgeInsets.symmetric(vertical: 19),
+                              //     child: Row(
+                              //       mainAxisAlignment:
+                              //           MainAxisAlignment.center,
+                              //       // ignore: prefer_const_literals_to_create_immutables
+                              //       children: [
+                              //         Row(
+                              //           children: [
+                              //             Container(
+                              //                 height: screenheight * 0.022,
+                              //                 // width: screenwidth * 0.08,
+                              //                 child: SvgPicture.asset(
+                              //                   'images/Group.svg',
+                              //                   fit: BoxFit.contain,
+                              //                 )),
+                              //             Text("Login with Google",
+                              //                 style: TextStyle(fontSize: 14)),
+                              //           ],
+                              //         )
+                              //       ],
+                              //     ),
+                              //   ),
+                              // ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text("Don't have an account?",
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w400)),
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => signup2()));
+                                      },
+                                      child: Text('Create Now',
                                           style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600)),
-                                    ],
-                                  ),
-                                ),
+                                              color: Color.fromARGB(
+                                                  255, 214, 98, 35),
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w400)))
+                                ],
                               ),
-                            ),
-
-                            Row(
-                              children: [
-                                TextButton(
-                                    onPressed: () {
-                                      if (emailformkey.currentState!
-                                          .validate()) {
-                                        forgotpassword(emailcontroller.text);
-                                      }
-                                    },
-                                    child: Text(
-                                      'Forgot Password?',
-                                      style: FlutterFlowTheme.of(context)
-                                          .bodyMedium
-                                          .override(
-                                            fontFamily: 'Inter',
-                                            color: Color.fromARGB(
-                                                255, 214, 98, 35),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 0.0,
-                                            lineHeight: 1.2,
-                                          ),
-                                    )),
-                              ],
-                            ),
-
-                            // Row(
-                            //   mainAxisAlignment: MainAxisAlignment.center,
-                            //   children: [
-                            //     Container(
-                            //       height: screenheight * 0.082,
-                            //       width: screenwidth * 0.165,
-                            //       child: MaterialButton(
-                            //         onPressed: () async {
-                            //           //googleLogin();
-                            //         },
-                            //         color: Colors.white,
-                            //         shape: RoundedRectangleBorder(
-                            //             borderRadius: BorderRadius.circular(5)),
-                            //         child: Padding(
-                            //           padding: EdgeInsets.symmetric(vertical: 20),
-                            //           child: Row(
-                            //             mainAxisAlignment: MainAxisAlignment.center,
-                            //             // ignore: prefer_const_literals_to_create_immutables
-                            //             children: [
-                            //               Container(
-                            //                 height: screenheight * 0.052,
-                            //                 width: screenwidth * 0.075,
-                            //                 child: SvgPicture.asset(
-                            //                   'images/Group.svg',
-                            //                 ),
-                            //               )
-                            //             ],
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ),
-                            //     SizedBox(
-                            //       width: screenwidth * 0.02,
-                            //     ),
-                            //     Container(
-                            //       height: screenheight * 0.082,
-                            //       width: screenwidth * 0.165,
-                            //       child: MaterialButton(
-                            //         onPressed: () async {
-                            //           //googleLogin();
-                            //         },
-                            //         color: Colors.white,
-                            //         shape: RoundedRectangleBorder(
-                            //             borderRadius: BorderRadius.circular(5)),
-                            //         child: Padding(
-                            //           padding: EdgeInsets.symmetric(vertical: 20),
-                            //           child: Row(
-                            //             mainAxisAlignment: MainAxisAlignment.center,
-                            //             // ignore: prefer_const_literals_to_create_immutables
-                            //             children: [
-                            //               Container(
-                            //                   height: screenheight * 0.052,
-                            //                   width: screenwidth * 0.075,
-                            //                   child:
-                            //                       Image.asset('images/Facebook-logo.png')
-                            //                   // SvgPicture.asset(
-                            //                   //   'images/f_logo_RGB-Blue_1441.svg',
-                            //                   //   height: 25,
-                            //                   //   width: 25,
-                            //                   // )
-                            //                   )
-                            //             ],
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ),
-                            //     SizedBox(
-                            //       width: screenwidth * 0.02,
-                            //     ),
-                            //     Container(
-                            //       height: screenheight * 0.082,
-                            //       width: screenwidth * 0.165,
-                            //       child: MaterialButton(
-                            //         onPressed: () async {
-                            //           //googleLogin();
-                            //         },
-                            //         color: Colors.white,
-                            //         shape: RoundedRectangleBorder(
-                            //             borderRadius: BorderRadius.circular(5)),
-                            //         child: Padding(
-                            //           padding: EdgeInsets.symmetric(vertical: 20),
-                            //           child: Row(
-                            //             mainAxisAlignment: MainAxisAlignment.center,
-                            //             // ignore: prefer_const_literals_to_create_immutables
-                            //             children: [
-                            //               Container(
-                            //                 height: screenheight * 0.052,
-                            //                 width: screenwidth * 0.075,
-                            //                 child: SvgPicture.asset(
-                            //                   'images/apple-black 1.svg',
-                            //                 ),
-                            //               )
-                            //             ],
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ),
-                            //     SizedBox(
-                            //       width: screenwidth * 0.02,
-                            //     ),
-                            //     Container(
-                            //       height: screenheight * 0.082,
-                            //       width: screenwidth * 0.165,
-                            //       child: MaterialButton(
-                            //         onPressed: () async {
-                            //           //googleLogin();
-                            //         },
-                            //         color: Colors.white,
-                            //         shape: RoundedRectangleBorder(
-                            //             borderRadius: BorderRadius.circular(5)),
-                            //         child: Padding(
-                            //           padding: EdgeInsets.symmetric(vertical: 20),
-                            //           child: Row(
-                            //             mainAxisAlignment: MainAxisAlignment.center,
-                            //             // ignore: prefer_const_literals_to_create_immutables
-                            //             children: [
-                            //               Container(
-                            //                 height: screenheight * 0.052,
-                            //                 width: screenwidth * 0.075,
-                            //                 child: SvgPicture.asset(
-                            //                   'images/twitter-color 1.svg',
-                            //                 ),
-                            //               ),
-                            //             ],
-                            //           ),
-                            //         ),
-                            //       ),
-                            //     ),
-                            //   ],
-                            // ),
-                            // SizedBox(
-                            //   height: screenheight * 0.012,
-                            // ),
-
-                            // Padding(
-                            //   padding:
-                            //       const EdgeInsets.only(top: 10, bottom: 20),
-                            //   child: Image.asset(
-                            //     "assets/images/Group 4.png",
-                            //     fit: BoxFit.fitWidth,
-                            //   ),
-                            // ),
-
-                            // MaterialButton(
-                            //   onPressed: () async {
-                            //     Get.defaultDialog(
-                            //         title: "Coming Soon",
-                            //         titlePadding: EdgeInsets.only(top: 10),
-                            //         content: Text(""),
-                            //         actions: [
-                            //           MaterialButton(
-                            //             color: Color.fromARGB(
-                            //                 255, 214, 98, 35),
-                            //             onPressed: () {
-                            //               Get.back();
-                            //             },
-                            //             child: Text(
-                            //               'OK',
-                            //               style: TextStyle(
-                            //                   color: Colors.white),
-                            //             ),
-                            //           )
-                            //         ]);
-                            //     //googleLogin();
-                            //   },
-                            //   color: Colors.white,
-                            //   elevation: 0,
-                            //   shape: RoundedRectangleBorder(
-                            //       borderRadius: BorderRadius.circular(5)),
-                            //   child: Padding(
-                            //     padding: EdgeInsets.symmetric(vertical: 19),
-                            //     child: Row(
-                            //       mainAxisAlignment:
-                            //           MainAxisAlignment.center,
-                            //       // ignore: prefer_const_literals_to_create_immutables
-                            //       children: [
-                            //         Row(
-                            //           children: [
-                            //             Container(
-                            //                 height: screenheight * 0.022,
-                            //                 // width: screenwidth * 0.08,
-                            //                 child: SvgPicture.asset(
-                            //                   'images/Group.svg',
-                            //                   fit: BoxFit.contain,
-                            //                 )),
-                            //             Text("Login with Google",
-                            //                 style: TextStyle(fontSize: 14)),
-                            //           ],
-                            //         )
-                            //       ],
-                            //     ),
-                            //   ),
-                            // ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("Don't have an account?",
-                                    style: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w400)),
-                                TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => signup2()));
-                                    },
-                                    child: Text('Create Now',
-                                        style: TextStyle(
-                                            color: Color.fromARGB(
-                                                255, 214, 98, 35),
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w400)))
-                              ],
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             )),
@@ -572,6 +584,9 @@ class _signinState extends State<signin> {
   }
 
   Future forgotpassword(String email) async {
+     setState(() {
+      loader=true;
+    });
     var data = json.encode({
       "$param": email,
     });
@@ -583,6 +598,9 @@ class _signinState extends State<signin> {
         body: data);
 
     if (response.statusCode == 200) {
+       setState(() {
+      loader=false;
+    });
       mapresponse = json.decode(response.body);
       print("reset link msg - $mapresponse");
       showDialog(
@@ -618,6 +636,9 @@ class _signinState extends State<signin> {
       //   },
       // );
     } else {
+       setState(() {
+      loader=false;
+    });
       print('fail');
       Get.defaultDialog(
         title: "",
@@ -640,6 +661,9 @@ class _signinState extends State<signin> {
   }
 
   Future userlogin(String email, String password) async {
+     setState(() {
+      loader=true;
+    });
     var data = json.encode({
       "email": email,
       "password": password,
@@ -653,6 +677,9 @@ class _signinState extends State<signin> {
         body: data);
 
     if (response.statusCode == 200) {
+       setState(() {
+      loader=false;
+    });
       mapresponse = json.decode(response.body);
 
       print('Login with email & password');
@@ -665,8 +692,18 @@ class _signinState extends State<signin> {
           "${mapresponse['user']['firstName']} ${mapresponse['user']['lastName']}");
       sharedPreferences.setString("token", mapresponse['token']);
       sharedPreferences.setInt("userid", mapresponse['user']['id']);
-
-      showDialog(
+      sharedPreferences.setString("email", mapresponse['user']['email']);
+      sharedPreferences.setString("mobilenumber", mapresponse['user']['primaryMobile']);
+     await DatabaseHelper.instance.adduserdata(UserData(
+      userId: mapresponse['user']['id'],
+      userToken: mapresponse['token'],
+      firstName: mapresponse['user']['firstName'],
+      lastName: mapresponse['user']['lastName'],
+      emailId: mapresponse['user']['email'],
+      mobileNumber: mapresponse['user']['primaryMobile']
+      ));
+      
+      showDialog(barrierDismissible: false,
           context: context,
           builder: (context) => AlertDialog(
                 title: Text(
@@ -701,6 +738,9 @@ class _signinState extends State<signin> {
       //   },
       // );
     } else {
+       setState(() {
+      loader=false;
+    });
       print('fail');
       Get.defaultDialog(
         title: "Invalid Email/Password",

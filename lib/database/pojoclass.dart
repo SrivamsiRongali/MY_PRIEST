@@ -7,15 +7,15 @@ class UserData {
   final String lastName;
   final String emailId;
   final String mobileNumber;
-  final String city;
-  final String state;
-  final String callPreference;
-  final String notificationPreference;
-  final String languagePreference;
-  final String philosophyType;
-  final String address;
-  final String locationCoordinates;
-  final String lastScreen;
+  // final String city;
+  // final String state;
+  // final String callPreference;
+  // final String notificationPreference;
+  // final String languagePreference;
+  // final String philosophyType;
+  // final String address;
+  // final String locationCoordinates;
+  // final String lastScreen;
 
   UserData(
       {required this.userId,
@@ -24,15 +24,16 @@ class UserData {
       required this.lastName,
       required this.emailId,
       required this.mobileNumber,
-      required this.city,
-      required this.state,
-      required this.callPreference,
-      required this.notificationPreference,
-      required this.languagePreference,
-      required this.philosophyType,
-      required this.address,
-      required this.locationCoordinates,
-      required this.lastScreen});
+      // required this.city,
+      // required this.state,
+      // required this.callPreference,
+      // required this.notificationPreference,
+      // required this.languagePreference,
+      // required this.philosophyType,
+      // required this.address,
+      // required this.locationCoordinates,
+      // required this.lastScreen
+      });
 
   factory UserData.fromMap(Map<String, dynamic> json) => new UserData(
       userId: json['userId'],
@@ -41,15 +42,16 @@ class UserData {
       lastName: json['lastName'],
       emailId: json['emailId'],
       mobileNumber: json['mobileNumber'],
-      city: json['city'],
-      state: json['state'],
-      callPreference: json['callPreference'],
-      notificationPreference: json['notificationPreference'],
-      languagePreference: json['languagePreference'],
-      philosophyType: json['philosophyType'],
-      address: json['address'],
-      locationCoordinates: json['locationCoordinates'],
-      lastScreen: json['lastScreen']);
+      // city: json['city'],
+      // state: json['state'],
+      // callPreference: json['callPreference'],
+      // notificationPreference: json['notificationPreference'],
+      // languagePreference: json['languagePreference'],
+      // philosophyType: json['philosophyType'],
+      // address: json['address'],
+      // locationCoordinates: json['locationCoordinates'],
+      // lastScreen: json['lastScreen']
+      );
 
   Map<String, dynamic> toMap() {
     return {
@@ -59,15 +61,15 @@ class UserData {
       'lastName': lastName,
       'emailId': emailId,
       'mobileNumber': mobileNumber,
-      'city': city,
-      'state': state,
-      'callPreference': callPreference,
-      'notificationPreference': notificationPreference,
-      'languagePreference': languagePreference,
-      'philosophyType': philosophyType,
-      'address': address,
-      'locationCoordinates': locationCoordinates,
-      'lastScreen': lastScreen
+      // 'city': city,
+      // 'state': state,
+      // 'callPreference': callPreference,
+      // 'notificationPreference': notificationPreference,
+      // 'languagePreference': languagePreference,
+      // 'philosophyType': philosophyType,
+      // 'address': address,
+      // 'locationCoordinates': locationCoordinates,
+      // 'lastScreen': lastScreen
     };
   }
 

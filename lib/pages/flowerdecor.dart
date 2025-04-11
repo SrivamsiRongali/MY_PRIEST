@@ -341,16 +341,14 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
         appBar: AppBar(
           backgroundColor: const Color(0xFFFFF7EA),
           automaticallyImplyLeading: false,
-          leading: flow == null
-              ? Container()
-              : FlutterFlowIconButton(
+          leading:FlutterFlowIconButton(
                   borderColor: Colors.transparent,
                   borderRadius: 30.0,
                   borderWidth: 1.0,
                   buttonSize: 60.0,
                   icon: const Icon(
                     Icons.arrow_back_ios,
-                    color: Color(0xFF1E2022),
+                    color: Color.fromARGB(255, 0, 0, 0),
                     size: 30.0,
                   ),
                   onPressed: () async {

@@ -12,7 +12,7 @@ class DatabaseHelper {
   Future<Database> get database async => _database ??= await _initDatabase();
   Future<Database> _initDatabase() async {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
-    String path = join(documentDirectory.path, 'IPSDataBase.db');
+    String path = join(documentDirectory.path, 'IPSDataBase0.1.db');
     return await openDatabase(
       path,
       version: 1,
@@ -27,16 +27,7 @@ CREATE TABLE userData(userId INTEGER,
   firstName STRING,
   lastName STRING,
   emailId STRING,
-  mobileNumber STRING,
-  city STRING,
-  state STRING,
-  callPreference STRING,
-  notificationPreference STRING,
-  languagePreference STRING,
-  philosophyType STRING,
-  address STRING,
-  locationCoordinates STRING,
-  lastScreen STRING)''');
+  mobileNumber STRING)''');
     print('table created');
     await db.execute('''
 CREATE TABLE bookingsData( templeId INTEGER,
@@ -62,7 +53,7 @@ CREATE TABLE filterData( templeType STRING,
   priestRatingMax INTEGER,
   templeRatingMin INTEGER,
   templeRatingMax INTEGER,
-  templeSortby STRING,)
+  templeSortby STRING)
 ''');
   }
 
@@ -99,7 +90,7 @@ CREATE TABLE filterData( templeType STRING,
   Future<int> updateusedata(UserData userData) async {
     Database db = await instance.database;
     var results =
-        await db.update('userData', userData.toMap(), where: 'roleid=1');
+        await db.update('userData', userData.toMap(),);
     return results;
   }
 

@@ -12,15 +12,14 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+import '../../database/dbhelper.dart';
+import '../../database/pojoclass.dart';
 import '../../flutter_flow/flutter_flow_icon_button.dart';
 import '../../flutter_flow/flutter_flow_theme.dart';
 import '../../shared.dart';
 import '../Account.dart';
 import '../login_signup/signin.dart';
 import '../my_bookings/Mybookings.dart';
-
-
-
 
 class myaccount extends StatefulWidget {
   const myaccount({super.key});
@@ -45,7 +44,7 @@ class _myaccountState extends State<myaccount> {
     var images = sharedPreferences.getString("image");
 
     setState(() {
-      image = images==null?null: File(images);
+      image = images == null ? null : File(images);
     });
   }
 
@@ -58,7 +57,8 @@ class _myaccountState extends State<myaccount> {
     print("$userid");
     http.Response response1;
     response1 = await http.get(
-      Uri.parse("https://${AppConstants.ipaddress.ipaddress}/api/users/$userid"),
+      Uri.parse(
+          "https://${AppConstants.ipaddress.ipaddress}/api/users/$userid"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",
@@ -68,12 +68,22 @@ class _myaccountState extends State<myaccount> {
     if (response1.statusCode == 200) {
       print('successful');
       mapresponse = json.decode(response1.body);
-
-      sharedPreferences.setString("name",
-          "${mapresponse["firstName"]==""? "":mapresponse["firstName"]=="string"?"":mapresponse["firstName"]} ${mapresponse["lastName"]==""? "":mapresponse["lastName"]=="string"?"":mapresponse["lastName"]}");
+      await DatabaseHelper.instance.updateusedata(UserData(
+          userId: mapresponse['id'],
+          userToken: token.toString(),
+          firstName: mapresponse['firstName'],
+          lastName: mapresponse['lastName'],
+          emailId: mapresponse['email'],
+          mobileNumber: mapresponse['primaryMobile']));
+      var data = await DatabaseHelper.instance.getuserdata();
+      print("user data = $data");
+      sharedPreferences.setString(
+          "name",
+          "${mapresponse["firstName"] == "" ? "" : mapresponse["firstName"] == "string" ? "" : mapresponse["firstName"]} ${mapresponse["lastName"] == "" ? "" : mapresponse["lastName"] == "string" ? "" : mapresponse["lastName"]}");
+      sharedPreferences.setString("mobilenumber", mapresponse['primaryMobile']);
       setState(() {
         name =
-            "${mapresponse["firstName"]==""? "":mapresponse["firstName"]=="string"?"":mapresponse["firstName"]} ${mapresponse["lastName"]==""? "":mapresponse["lastName"]=="string"?"":mapresponse["lastName"]}";
+            "${mapresponse["firstName"] == "" ? "" : mapresponse["firstName"] == "string" ? "" : mapresponse["firstName"]} ${mapresponse["lastName"] == "" ? "" : mapresponse["lastName"] == "string" ? "" : mapresponse["lastName"]}";
       });
 
       print(mapresponse);
@@ -90,44 +100,44 @@ class _myaccountState extends State<myaccount> {
     final screenwidth = MediaQuery.of(context).size.width;
     final tabbarheight = MediaQuery.of(context).padding.top;
     return Scaffold(
-           appBar: AppBar(
-            backgroundColor: Color(0xFFFFF7EA),
-            automaticallyImplyLeading: false,
-            // leading: FlutterFlowIconButton(
-            //   borderColor: Colors.transparent,
-            //   borderRadius: 30.0,
-            //   borderWidth: 1.0,
-            //   buttonSize: 60.0,
-            //   icon: Icon(
-            //     Icons.arrow_back_ios,
-            //     color: Color(0xFF1E2022),
-            //     size: 30.0,
-            //   ),
-            //   onPressed: () async {
-            //     Get.back();
-            //   },
-            // ),
-            title: Text(
-              'My Account',
-              style: FlutterFlowTheme.of(context).headlineMedium.override(
-                    fontFamily: 'Inter Tight',
-                    color: Color(0xFF1E2022),
-                    fontSize: 22.0,
-                    letterSpacing: 0.0,
-                    fontWeight: FontWeight.w500,
-                  ),
-            ),
-         
-            centerTitle: true,
-            elevation: 0.0,
-          ),
-   backgroundColor:  Color(0xFFFFF6EA),
+      appBar: AppBar(
+        backgroundColor: Color(0xFFFFF7EA),
+        automaticallyImplyLeading: false,
+        // leading: FlutterFlowIconButton(
+        //   borderColor: Colors.transparent,
+        //   borderRadius: 30.0,
+        //   borderWidth: 1.0,
+        //   buttonSize: 60.0,
+        //   icon: Icon(
+        //     Icons.arrow_back_ios,
+        //     color: Color(0xFF1E2022),
+        //     size: 30.0,
+        //   ),
+        //   onPressed: () async {
+        //     Get.back();
+        //   },
+        // ),
+        title: Text(
+          'My Account',
+          style: FlutterFlowTheme.of(context).headlineMedium.override(
+                fontFamily: 'Inter Tight',
+                color: Color(0xFF1E2022),
+                fontSize: 22.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+
+        centerTitle: true,
+        elevation: 0.0,
+      ),
+      backgroundColor: Color(0xFFFFF6EA),
       body: Container(
         height: screenheight,
         width: screenwidth,
         decoration: const BoxDecoration(
-            color: Colors.white,
-           ),
+          color: Colors.white,
+        ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(30, 50, 30, 0),
           child: Column(
@@ -150,7 +160,11 @@ class _myaccountState extends State<myaccount> {
                     height: screenheight * 0.008,
                   ),
                   Text(
-                    name == null ? "Full name" : name!.removeAllWhitespace==""?"Full name":name!,
+                    name == null
+                        ? "Full name"
+                        : name!.removeAllWhitespace == ""
+                            ? "Full name"
+                            : name!,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 18,
@@ -169,7 +183,7 @@ class _myaccountState extends State<myaccount> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      Get.to(()=>mybookings(),arguments: false);
+                      Get.to(() => mybookings(), arguments: false);
                     },
                     child: SizedBox(
                       height: screenheight * 0.075,
@@ -179,17 +193,20 @@ class _myaccountState extends State<myaccount> {
                         children: [
                           TextButton(
                             onPressed: () {
-                               Get.to(()=>mybookings(),arguments: false);
+                              Get.to(() => mybookings(), arguments: false);
                             },
                             child: Text(
                               'My Bookings',
                               style: TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w500,color: Colors.black),
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black),
                             ),
                           ),
                           IconButton(
-                              onPressed: () {Get.to(()=>mybookings(),arguments: false);},
+                              onPressed: () {
+                                Get.to(() => mybookings(), arguments: false);
+                              },
                               icon: Icon(
                                 Icons.arrow_forward_ios,
                                 color: Colors.black,
@@ -205,7 +222,7 @@ class _myaccountState extends State<myaccount> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Get.to(()=>Accountwidget());
+                      Get.to(() => Accountwidget());
                     },
                     child: SizedBox(
                       height: screenheight * 0.075,
@@ -213,19 +230,22 @@ class _myaccountState extends State<myaccount> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         // ignore: prefer_const_literals_to_create_immutables
                         children: [
-                          TextButton(onPressed: (){
-                            Get.to(()=>Accountwidget());
-                            }, child: Text(
-                            'My Profile',
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,color: Colors.black),
-                          ),),
-                          
+                          TextButton(
+                            onPressed: () {
+                              Get.to(() => Accountwidget());
+                            },
+                            child: Text(
+                              'My Profile',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black),
+                            ),
+                          ),
                           IconButton(
                               onPressed: () {
-                                Get.to(()=>Accountwidget());
-                                },
+                                Get.to(() => Accountwidget());
+                              },
                               icon: Icon(
                                 Icons.arrow_forward_ios,
                                 color: Colors.black,
@@ -235,7 +255,6 @@ class _myaccountState extends State<myaccount> {
                       ),
                     ),
                   ),
-                
                   Divider(
                     thickness: 1,
                     height: 0,
@@ -250,6 +269,14 @@ class _myaccountState extends State<myaccount> {
                   final SharedPreferences sharedPreferences =
                       await SharedPreferences.getInstance();
                   sharedPreferences.remove("flow");
+                  sharedPreferences.remove("name");
+                  sharedPreferences.remove("token");
+                  sharedPreferences.remove("userid");
+                  sharedPreferences.remove("email");
+                  sharedPreferences.remove("mobilenumber");
+                  await DatabaseHelper.instance.removeuserdata();
+                  await DatabaseHelper.instance.removefilterdata();
+
                   Get.offAll(signin());
                 },
                 child: Container(

@@ -79,6 +79,22 @@ class _PoojasWidgetState extends State<PoojasWidget> {
           ServicesList.add(priestList(
               Priestobject: mapresponse!['data'][n], selected: false));
         }
+        for(int k=0;k<ServicesList.length;k++){
+        for(int m =0;m<Selected_ServicesList.length;m++){
+          print("k=$k, m=$m");
+            if(Selected_ServicesList[m]['id']==ServicesList[k].Priestobject['id']){
+              ServicesList[k].selected=true;
+              print("${Selected_ServicesList[m]}  ${ServicesList[k].Priestobject} ");
+              print("object set to true");
+            }
+            else{
+              print("object not set to true");
+              
+              print("${Selected_ServicesList[m]} \n  ${ServicesList[k].Priestobject} ");
+            }
+          }
+
+        }
       });
 
       return mapresponse;
@@ -117,8 +133,25 @@ class _PoojasWidgetState extends State<PoojasWidget> {
         loader = false;
         ServicesList = [];
         for (int n = 0; n < mapresponse!['data'].length; n++) {
+          
           ServicesList.add(priestList(
               Priestobject: mapresponse!['data'][n], selected: false));
+        }
+        for(int k=0;k<ServicesList.length;k++){
+        for(int m =0;m<Selected_ServicesList.length;m++){
+          print("k=$k, m=$m");
+            if(Selected_ServicesList[m]['id']==ServicesList[k].Priestobject['id']){
+              ServicesList[k].selected=true;
+              print("${Selected_ServicesList[m]}  ${ServicesList[k].Priestobject} ");
+              print("object set to true");
+            }
+            else{
+              print("object not set to true");
+              
+              print("${Selected_ServicesList[m]} \n  ${ServicesList[k].Priestobject} ");
+            }
+          }
+
         }
       });
 
@@ -430,9 +463,9 @@ class _PoojasWidgetState extends State<PoojasWidget> {
                                                             print("-----00");
                                                             if (ServicesList[
                                                                         index]
-                                                                    .Priestobject ==
+                                                                    .Priestobject['id'] ==
                                                                 Selected_ServicesList[
-                                                                    n]) {
+                                                                    n]['id']) {
                                                               Selected_ServicesList
                                                                   .removeAt(n);
                                                             }

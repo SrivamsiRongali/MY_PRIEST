@@ -341,9 +341,7 @@ class _cateringWidgetState extends State<cateringWidget> {
         appBar: AppBar(
           backgroundColor: const Color(0xFFFFF7EA),
           automaticallyImplyLeading: false,
-          leading: flow == null
-              ? Container()
-              : FlutterFlowIconButton(
+          leading: FlutterFlowIconButton(
                   borderColor: Colors.transparent,
                   borderRadius: 30.0,
                   borderWidth: 1.0,

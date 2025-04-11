@@ -68,7 +68,7 @@ class _HomePageWidgetState extends State<HomePageWidget> {
     });
     response1 = await http.get(
       Uri.parse(
-          "https://${AppConstants.ipaddress.ipaddress}/api/bookings?pageIndex=0&pageSize=20&sortBy=id&sortOrder=DESC&userId=$userid"),
+          "https://${AppConstants.ipaddress.ipaddress}/api/bookings?bookingStatus=Booked&pageIndex=0&pageSize=4&sortBy=bookingDate&sortOrder=ASC&userId=$userid"),
       headers: {
         "accept": "*/*",
         "Content-Type": "application/json",

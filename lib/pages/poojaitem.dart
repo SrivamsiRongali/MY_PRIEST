@@ -71,6 +71,22 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
           ServicesList.add(poojaitemlist(
               poojaobject: mapresponse!['data'][n], selected: false,));
         }
+        for(int k=0;k<ServicesList.length;k++){
+        for(int m =0;m<Selected_ServicesList.length;m++){
+          print("k=$k, m=$m");
+            if(Selected_ServicesList[m]['id']==ServicesList[k].poojaobject['id']){
+              ServicesList[k].selected=true;
+              print("${Selected_ServicesList[m]}  ${ServicesList[k].poojaobject} ");
+              print("object set to true");
+            }
+            else{
+              print("object not set to true");
+              
+              print("${Selected_ServicesList[m]} \n  ${ServicesList[k].poojaobject} ");
+            }
+          }
+
+        }
       });
 
       return mapresponse;
@@ -105,9 +121,28 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
       print('successful');
       mapresponse = json.decode(response1.body);
 
-      setState(() {
-        loader = false;
-        ServicesList = mapresponse!['data'];
+      setState(() {loader = false;
+         ServicesList = [];
+        for (int n = 0; n < mapresponse!['data'].length; n++) {
+          ServicesList.add(poojaitemlist(
+              poojaobject: mapresponse!['data'][n], selected: false,));
+        }
+        for(int k=0;k<ServicesList.length;k++){
+        for(int m =0;m<Selected_ServicesList.length;m++){
+          print("k=$k, m=$m");
+            if(Selected_ServicesList[m]['id']==ServicesList[k].poojaobject['id']){
+              ServicesList[k].selected=true;
+              print("${Selected_ServicesList[m]}  ${ServicesList[k].poojaobject} ");
+              print("object set to true");
+            }
+            else{
+              print("object not set to true");
+              
+              print("${Selected_ServicesList[m]} \n  ${ServicesList[k].poojaobject} ");
+            }
+          }
+
+        }
       });
 
       return mapresponse;
@@ -395,9 +430,9 @@ class _PoojasitemsWidgetState extends State<PoojasitemsWidget> {
                                                             print("-----00");
                                                             if (ServicesList[
                                                                         index]
-                                                                    .poojaobject ==
+                                                                    .poojaobject['id'] ==
                                                                 Selected_ServicesList[
-                                                                    n]) {
+                                                                    n]['id']) {
                                                               Selected_ServicesList
                                                                   .removeAt(n);
                                                             }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
@@ -7,6 +8,8 @@ import 'package:my_priest/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../../shared.dart';
+import '../database/dbhelper.dart';
+import '../database/pojoclass.dart';
 import '../flutter_flow/flutter_flow_drop_down.dart';
 import '../flutter_flow/form_field_controller.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
@@ -80,10 +83,23 @@ class _AccountwidgetState extends State<Accountwidget> {
     if (response1.statusCode == 200) {
        mapresponse = json.decode(response1.body);
       print('successful ${ mapresponse!['firstName'].toString()+' '+ mapresponse!['lastName'].toString()} ');
+      
+await DatabaseHelper.instance.updateusedata(UserData(
+      userId: mapresponse!['id'],
+      userToken: token.toString(),
+      firstName: mapresponse!['firstName'],
+      lastName: mapresponse!['lastName'],
+      emailId: mapresponse!['email'],
+      mobileNumber: mapresponse!['primaryMobile']
+      ));
+      var data= await DatabaseHelper.instance.getuserdata();
+      print("user data = $data");
+     
   
       final SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
           sharedPreferences.setString("name", mapresponse!['firstName']+' '+ mapresponse!['lastName']);
+           sharedPreferences.setString("mobilenumber", mapresponse!['primaryMobile']);
       setState(() {
         loader=false;
        
@@ -570,6 +586,11 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                               controller: mobilenumber,
                               autofocus: false,
                               obscureText: false,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                              LengthLimitingTextInputFormatter(10),
+                              FilteringTextInputFormatter.digitsOnly
+                            ],
                               decoration: InputDecoration(
                                 isDense: true,
                                 labelText: 'Mobile number',
