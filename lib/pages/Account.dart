@@ -285,7 +285,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
         key: scaffoldKey,
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFFFF7EA),
+          backgroundColor: const Color(0xFFFEF2DA),
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,

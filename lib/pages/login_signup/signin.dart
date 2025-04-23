@@ -553,12 +553,12 @@ class _signinState extends State<signin> {
     );
   }
 
-  Map? mapresponse;
+  
   String resetpasswordurl = "";
   String param="";
   Future _apicall() async {
     http.Response response1;
-
+Map mapresponse;
     response1 = await http.get(
       Uri.parse("https://www.indianpriestservices.com/app-config.php"),
       headers: {

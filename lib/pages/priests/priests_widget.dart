@@ -97,7 +97,7 @@ class _PriestsWidgetState extends State<PriestsWidget> {
         key: scaffoldKey,
         backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: const Color(0xFFFFF7EA),
+          backgroundColor: const Color(0xFFFEF2DA),
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -142,7 +142,7 @@ class _PriestsWidgetState extends State<PriestsWidget> {
                 padding: const EdgeInsetsDirectional.fromSTEB(15.0, 15.0, 15.0, 10.0),
                 child: SingleChildScrollView(
                   child: 
-                  priestList.isEmpty? 
+                  priestList.isEmpty&&loader==false? 
                   SizedBox(
                     height: 200,
                     width: double.infinity,

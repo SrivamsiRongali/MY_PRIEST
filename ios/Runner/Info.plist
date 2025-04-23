@@ -49,7 +49,7 @@
 
 
 	<key>NSLocationWhenInUseUsageDescription</key>
- <string>To get user Current location.</string>
+ <string>We use your location to show nearby temples and service providers based on your current area.</string>
  <key>NSLocationTemporaryUsageDescriptionDictionary</key>
 <dict>
   <key>YourPurposeKey</key>

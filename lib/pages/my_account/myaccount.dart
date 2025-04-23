@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:my_priest/pages/support.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -101,7 +102,7 @@ class _myaccountState extends State<myaccount> {
     final tabbarheight = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFFFF7EA),
+        backgroundColor: Color(0xFFFEF2DA),
         automaticallyImplyLeading: false,
         // leading: FlutterFlowIconButton(
         //   borderColor: Colors.transparent,
@@ -245,6 +246,45 @@ class _myaccountState extends State<myaccount> {
                           IconButton(
                               onPressed: () {
                                 Get.to(() => Accountwidget());
+                              },
+                              icon: Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.black,
+                                size: 20,
+                              ))
+                        ],
+                      ),
+                    ),
+                  ),
+                  Divider(
+                    thickness: 1,
+                    height: 0,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Get.to(() => Accountwidget());
+                    },
+                    child: SizedBox(
+                      height: screenheight * 0.075,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // ignore: prefer_const_literals_to_create_immutables
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              Get.to(() => support());
+                            },
+                            child: Text(
+                              'Support',
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black),
+                            ),
+                          ),
+                          IconButton(
+                              onPressed: () {
+                                Get.to(() => support());
                               },
                               icon: Icon(
                                 Icons.arrow_forward_ios,

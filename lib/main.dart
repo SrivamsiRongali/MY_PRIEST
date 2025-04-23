@@ -25,6 +25,12 @@ void main() async {
   usePathUrlStrategy();
 
   await FlutterFlowTheme.initialize();
+   SystemChrome.setSystemUIOverlayStyle(
+    SystemUiOverlayStyle(
+      statusBarColor: Color(0xFFFEF2DA), // Change to your desired color
+      statusBarIconBrightness: Brightness.dark, // For white icons
+    ),
+  );
 
   runApp(MyApp());
 }
@@ -41,7 +47,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = FlutterFlowTheme.themeMode;
+
 
   late AppStateNotifier _appStateNotifier;
   late GoRouter _router;
@@ -54,10 +60,7 @@ class _MyAppState extends State<MyApp> {
     _router = createRouter(_appStateNotifier);
   }
 
-  void setThemeMode(ThemeMode mode) => safeSetState(() {
-        _themeMode = mode;
-        FlutterFlowTheme.saveThemeMode(mode);
-      });
+
       
 
   @override
@@ -81,8 +84,8 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.light,
           useMaterial3: false,
         ),
-      
-        themeMode: _themeMode,
+       color: Color(0xFFFFF7EA),
+       
         home: splash(),
       ),
     );

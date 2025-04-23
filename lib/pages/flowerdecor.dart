@@ -41,7 +41,7 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
     super.initState();
     // _apicall();
 
-    _configapicall("");
+    _configapicall();
 
     scrollcontroller1.addListener(() {
       print("end of the list");
@@ -50,7 +50,7 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
         if (finaltemplelist.length < 60) {
           if (tokenispresent) {
             print("calling temple api again");
-            _configapicall(searchcontroller.text);
+             currentPosition();
           }
         }
       }
@@ -102,7 +102,8 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
   // }
 
   Map? configmapresponse;
-  _configapicall(String keyword) async {
+
+  _configapicall() async {
     setState(() {
       loader = true;
     
@@ -122,9 +123,8 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
       setState(() {
         configmapresponse = json.decode(response1.body);
 
-        configmapresponse!['temples_around_me_radius'];
-        currentPosition(
-            configmapresponse!['temples_around_me_radius'], keyword);
+       _discreteValue = double.parse(configmapresponse!['temples_around_me_radius']) ;
+        currentPosition();
       });
 
       return mapresponse;
@@ -132,56 +132,91 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
       setState(() {
         loader = false;
       });
-      currentPosition(
-          configmapresponse == null
-              ? 10000
-              : configmapresponse!['temples_around_me_radius'],
-          keyword);
+      currentPosition();
       print(response1.statusCode);
       print('fetch unsuccessful');
       print(response1.body);
     }
   }
 
-  Future<Position> currentPosition(String radius, String keyword) async {
-    bool serviceEnabled;
-    LocationPermission permission;
+   bool locationavailable=false;
+  currentPosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
 
-    // Checking if location services are enabled
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled');
-    }
+  setState(() {
+    loader = true;
+  });
 
-    // Checking the location permission status
-    permission = await Geolocator.checkPermission();
+  // Check if location services are enabled
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    setState(() {
+      loader = false;
+      locationavailable = false;
+      finaltemplelist = [];
+    });
+     await Geolocator.openLocationSettings(); 
+    return Future.error('Location services are disabled');
+  }
+
+  // Check permission
+  permission = await Geolocator.checkPermission();
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
     if (permission == LocationPermission.denied) {
-      // Requesting permission if it is denied
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error("Location permission denied");
-      }
+      setState(() {
+        loader = false;
+        locationavailable = false;
+        finaltemplelist = [];
+      });
+      return Future.error('Location permissions are denied');
     }
+  }
 
-    // Handling the case where permission is permanently denied
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are permanently denied');
-    }
+  if (permission == LocationPermission.deniedForever) {
+    setState(() {
+      loader = false;
+      locationavailable = false;
+      finaltemplelist = [];
+    });
 
-    // Getting the current position of the user
+    // Optionally open settings
+    await Geolocator.openAppSettings();
+
+    return Future.error(
+      'Location permissions are permanently denied, please enable them in app settings.');
+  }
+
+  // When permission is granted
+  try {
     Position position = await Geolocator.getCurrentPosition();
     print(position.latitude);
-    _templesbasedonlocationapicall(
-        position.latitude, position.longitude, radius, keyword);
+    setState(() {
+      loader = false;
+      locationavailable = true;
+    
+    });
+
+    _templesbasedonlocationapicall(position.latitude, position.longitude);
     return position;
+  } catch (e) {
+    setState(() {
+      loader = false;
+      locationavailable = false;
+      finaltemplelist = [];
+    });
+    return Future.error('Failed to get location: $e');
   }
+}
 
   List templesresponse = [];
   List<templedetails> finaltemplelist = List.empty(growable: true);
   String Pagenationtoken = "";
   bool tokenispresent = true;
   _templesbasedonlocationapicall(
-      double lat, double long, String radius, String keyword) async {
+      double lat, double long) async {
     setState(() {
       loader = true;
     });
@@ -207,7 +242,7 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
     if (response1.statusCode == 200) {
       mapresponse = json.decode(response1.body);
       print("Pagenationtoken lenght ${Pagenationtoken}");
-      if (Pagenationtoken.length == 0 && keyword.length >= 0) {
+      if (Pagenationtoken.length == 0 && searchcontroller.text.length >= 0) {
         setState(() {
           loader = false;
           finaltemplelist = [];
@@ -320,6 +355,8 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
 
   @override
   void dispose() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    searchcontroller.dispose();
     super.dispose();
   }
 
@@ -333,487 +370,522 @@ class _flowerdecorWidgetState extends State<flowerdecorWidget> {
   @override
   Widget build(BuildContext context) {
     final screensize = MediaQuery.of(context).size;
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFFFF7EA),
-          automaticallyImplyLeading: false,
-          leading:FlutterFlowIconButton(
-                  borderColor: Colors.transparent,
-                  borderRadius: 30.0,
-                  borderWidth: 1.0,
-                  buttonSize: 60.0,
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    color: Color.fromARGB(255, 0, 0, 0),
-                    size: 30.0,
-                  ),
-                  onPressed: () async {
-                    Get.back();
-                  },
+    return Scaffold(
+      key: scaffoldKey,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFEF2DA),
+        automaticallyImplyLeading: false,
+        leading:FlutterFlowIconButton(
+                borderColor: Colors.transparent,
+                borderRadius: 30.0,
+                borderWidth: 1.0,
+                buttonSize: 60.0,
+                icon: const Icon(
+                  Icons.arrow_back_ios,
+                  color: Color.fromARGB(255, 0, 0, 0),
+                  size: 30.0,
                 ),
-          title: Text(
-            'Flower Decor',
-            style: FlutterFlowTheme.of(context).headlineMedium.override(
-                  fontFamily: 'Inter Tight',
-                  color: const Color(0xFF1E2022),
-                  fontSize: 22.0,
-                  letterSpacing: 0.0,
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-          centerTitle: true,
-          elevation: 0.0,
-          actions: [
-            IconButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return popupwithcustombuttons(
-                          onPressedforbutton1: () async{
+                onPressed: () async {
+                  Get.back();
+                },
+              ),
+        title: Text(
+          'Flower Decors',
+          style: FlutterFlowTheme.of(context).headlineMedium.override(
+                fontFamily: 'Inter Tight',
+                color: const Color(0xFF1E2022),
+                fontSize: 22.0,
+                letterSpacing: 0.0,
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+        centerTitle: true,
+        elevation: 0.0,
+        actions: [
+          IconButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return popupwithcustombuttons(
+                        onPressedforbutton1: () async{
+                        
+                         
+                          this.setState(() {
+                            Pagenationtoken = "";
+                            loader = true;
+                             _discreteValue = 5000;
+                          });
+                           currentPosition(
+                             );
+                          Get.back();
+                        },
+                        onPressedforbutton2: () async{
+                         
+                          this.setState(() {
+                            Pagenationtoken = "";
                           
-                           
-                            this.setState(() {
-                              Pagenationtoken = "";
-                              loader = true;
-                               _discreteValue = 5000;
-                            });
-                             currentPosition(
-                                configmapresponse!['temples_around_me_radius'],
-                                "");
-                            Get.back();
-                          },
-                          onPressedforbutton2: () async{
-                           
-                            this.setState(() {
-                              Pagenationtoken = "";
-                            
-                              loader = true;
-                            });
-                             currentPosition(_discreteValue.toString(), "");
-                            Get.back();
-                          },
-                          content: Container(
-                            height: 150,
-                            child: StatefulBuilder(
-                              builder: (context, setState) => Container(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                                  child: Container(
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "Distance",
-                                              style: TextStyle(
-                                                  fontWeight: FontWeight.w500,
-                                                  fontSize: 16),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: 20,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              "${configmapresponse == null ? 5000 : double.parse(configmapresponse!['temples_around_me_filter_config']['min_radius']) / 1000}km",
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                            Text(
-                                              "${configmapresponse == null ? 150000 : double.parse(configmapresponse!['temples_around_me_filter_config']['max_radius']) / 1000}km",
-                                              style: TextStyle(fontSize: 10),
-                                            ),
-                                          ],
-                                        ),
-                                        Slider(
-                                          value: _discreteValue,
-                                          min: configmapresponse == null
-                                              ? 5000
-                                              : double.parse(configmapresponse![
-                                                      'temples_around_me_filter_config']
-                                                  ['min_radius']),
-                                          max: configmapresponse == null
-                                              ? 150000
-                                              : double.parse(configmapresponse![
-                                                      'temples_around_me_filter_config']
-                                                  ['max_radius']),
-                                          divisions: 1000,
-                                          label: '${_discreteValue/1000.round()}km',
-                                          onChanged: (double value) {
-                                        setState(() {
-                                              _discreteValue = value;
-                                            });
-
-                                            this.setState(() {
-                                              _discreteValue = value;
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    ),
+                            loader = true;
+                          });
+                           currentPosition();
+                          Get.back();
+                        },
+                        content: Container(
+                          height: 150,
+                          child: StatefulBuilder(
+                            builder: (context, setState) => Container(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                                child: Container(
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            "Distance",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 16),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 20,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            "${configmapresponse == null ? 5000 : double.parse(configmapresponse!['temples_around_me_filter_config']['min_radius']) / 1000}km",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                          Text(
+                                            "${configmapresponse == null ? 150000 : double.parse(configmapresponse!['temples_around_me_filter_config']['max_radius']) / 1000}km",
+                                            style: TextStyle(fontSize: 10),
+                                          ),
+                                        ],
+                                      ),
+                                      Slider(
+                                        value: _discreteValue,
+                                        min: configmapresponse == null
+                                            ? 5000
+                                            : double.parse(configmapresponse![
+                                                    'temples_around_me_filter_config']
+                                                ['min_radius']),
+                                        max: configmapresponse == null
+                                            ? 150000
+                                            : double.parse(configmapresponse![
+                                                    'temples_around_me_filter_config']
+                                                ['max_radius']),
+                                        divisions: 1000,
+                                        label: '${_discreteValue/1000.round()}km',
+                                        onChanged: (double value) {
+                                      setState(() {
+                                            _discreteValue = value;
+                                          });
+    
+                                          this.setState(() {
+                                            _discreteValue = value;
+                                          });
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                          title: Text("Filter"),
-                          button1label: 'Clear',
-                          button2label: 'Apply',
-                        );
-                      });
-                },
-                icon: Icon(
-                  Icons.filter_alt_outlined,
-                  color: Colors.black,
-                )),
-          ],
-        ),
-        body: SafeArea(
-          top: true,
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
-            child: ModalProgressHUD(
-              inAsyncCall: loader,
-              progressIndicator: CircularProgressIndicator(
-                color: Color.fromARGB(255, 214, 98, 35),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      color: const Color(0xFFFFF7EA),
-                      child: Padding(
-                        padding: const EdgeInsetsDirectional.fromSTEB(
-                            10.0, 10.0, 10.0, 10.0),
-                        child: TextFormField(
-                          cursorColor: Colors.black,
-                          controller: searchcontroller,
-                          keyboardType: TextInputType.visiblePassword,
-                          onChanged: (value) {
-                            if (value.length >= 3) {
-                            setState(() {
-                              Pagenationtoken="";
-                            });
-                              
-                              _configapicall(value);
-                            } else if(value.length == 0) {
-                              setState(() {
-                              Pagenationtoken="";
-                            });
-                              _configapicall("");
-                            }
-                          },
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: Colors.white,
-                            labelText: "Search Flower decor",
-                            labelStyle: const TextStyle(
-                                color: Color.fromARGB(255, 204, 204, 204)),
-                            // hintText: "Password",
-                            // hintStyle: TextStyle(fontWeight: FontWeight.bold),
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                borderSide: const BorderSide(
-                                    color: Colors.transparent, width: 2)),
-                            border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                borderSide: const BorderSide(
-                                    color: Colors.white, width: 2)),
-                            focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(5),
-                                borderSide: const BorderSide(
-                                    color: Colors.transparent, width: 0)),
-                            prefixIcon: const Icon(
-                              Icons.search,
-                              color: Color.fromARGB(255, 204, 204, 204),
-                            ),
-                          ),
-                          maxLines: 1,
                         ),
+                        title: Text("Filter"),
+                        button1label: 'Clear',
+                        button2label: 'Apply',
+                      );
+                    });
+              },
+              icon: Icon(
+                Icons.filter_alt_outlined,
+                color: Colors.black,
+              )),
+        ],
+      ),
+      body: SafeArea(
+        top: true,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+          ),
+          child: ModalProgressHUD(
+            inAsyncCall: loader,
+            progressIndicator: CircularProgressIndicator(
+              color: Color.fromARGB(255, 214, 98, 35),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    color: const Color(0xFFFEF2DA),
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                          10.0, 10.0, 10.0, 10.0),
+                      child: TextFormField(
+                        cursorColor: Colors.black,
+                        controller: searchcontroller,
+                        keyboardType: TextInputType.visiblePassword,
+                        onChanged: (value) {
+                          if (value.length >= 3) {
+                          setState(() {
+                            Pagenationtoken="";
+                          });
+                            
+                             currentPosition();
+                          } else if(value.length == 0) {
+                            setState(() {
+                            Pagenationtoken="";
+                          });
+                             currentPosition();
+                          }
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          labelText: "Search Flower Decors",
+                          labelStyle: const TextStyle(
+                              color: Color.fromARGB(255, 204, 204, 204)),
+                          // hintText: "Password",
+                          // hintStyle: TextStyle(fontWeight: FontWeight.bold),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: const BorderSide(
+                                  color: Colors.transparent, width: 2)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: const BorderSide(
+                                  color: Colors.white, width: 2)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5),
+                              borderSide: const BorderSide(
+                                  color: Colors.transparent, width: 0)),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color.fromARGB(255, 204, 204, 204),
+                          ),
+                        ),
+                        maxLines: 1,
                       ),
                     ),
-                    finaltemplelist.isEmpty
-                        ? loader
-                            ? Container()
-                            : SizedBox(
-                                height: 200,
-                                width: double.infinity,
-                                child: const Center(
-                                    child: Text(
-                                        "No Flower decor(s) are available near you")),
-                              )
-                        : Container(
-                            // color: Colors.blue,
-                            height: screensize.height * 0.81,
-                            child: Padding(
-                              padding: const EdgeInsetsDirectional.fromSTEB(
-                                  15.0, 0.0, 15.0, 0.0),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                physics: const BouncingScrollPhysics(),
-                                itemCount: finaltemplelist.length >= 60
-                                    ? finaltemplelist.length
-                                    : finaltemplelist.length + 1,
-                                controller: scrollcontroller1,
-                                itemBuilder: (BuildContext context,
-                                        int index) =>
-                                    index < finaltemplelist.length
-                                        ? Column(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsetsDirectional
-                                                        .fromSTEB(
-                                                        0.0, 10.0, 0.0, 0.0),
-                                                child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.max,
-                                                      children: [
-                                                        SizedBox(
-                                                          height: screensize
-                                                                  .height *
-                                                              0.13,
-                                                          width:
-                                                              screensize.width *
-                                                                  0.26,
-                                                          child: ClipRRect(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        15),
-                                                            child: finaltemplelist[
-                                                                            index]
-                                                                        .imageurl ==
-                                                                    dummyData
-                                                                ? Image.asset(
-                                                                    'assets/images/ganesh_(5).png',
-                                                                    // height: screensize.height * 0.13,
-                                                                    fit: BoxFit
-                                                                        .fill,
-                                                                  )
-                                                                : Image.memory(
-                                                                    finaltemplelist[
-                                                                            index]
-                                                                        .imageurl,
-                                                                    fit: BoxFit
-                                                                        .fill,
-                                                                  ),
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsetsDirectional
-                                                                  .fromSTEB(
-                                                                  15.0,
-                                                                  0.0,
-                                                                  0.0,
-                                                                  0.0),
-                                                          child: Column(
-                                                            mainAxisAlignment:
-                                                                MainAxisAlignment
-                                                                    .spaceAround,
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .max,
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              SizedBox(
-                                                                width: screensize
-                                                                        .width *
-                                                                    0.622,
-                                                                child: Text(
+                  ),
+                  finaltemplelist.isEmpty
+                      ? loader
+                          ? Container()
+                          :
+                            locationavailable?     SizedBox(
+                              height: 200,
+                              width: double.infinity,
+                              child: const Center(
+                                  child: Text(
+                                      "No Flower Decors are available near you")),
+                            ):SizedBox(
+                              height: 300,
+                              width: double.infinity,
+                              child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                          "Location Needed to Show Nearby Flower Decors",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: const Text(
+                                            "We couldn’t access your current location. Please enable location access in your device settings so we can show you the nearest Flower Decors.",
+                                            textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          
+                              MaterialButton(
+                              
+                                onPressed: () {
+                                  currentPosition();
+                                },
+                                color: Color.fromARGB(255, 214, 98, 35),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)),
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.all(10),
+                                  child: Text('Provide Location Access',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600)),
+                                ),
+                              ),
+                                         
+                                    ],
+                                  )),
+                            )
+                      : Container(
+                          // color: Colors.blue,
+                          height: screensize.height * 0.81,
+                          child: Padding(
+                            padding: const EdgeInsetsDirectional.fromSTEB(
+                                15.0, 0.0, 15.0, 0.0),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: finaltemplelist.length >= 60
+                                  ? finaltemplelist.length
+                                  : finaltemplelist.length + 1,
+                              controller: scrollcontroller1,
+                              itemBuilder: (BuildContext context,
+                                      int index) =>
+                                  index < finaltemplelist.length
+                                      ? Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsetsDirectional
+                                                      .fromSTEB(
+                                                      0.0, 10.0, 0.0, 0.0),
+                                              child: Column(
+                                                mainAxisSize:
+                                                    MainAxisSize.max,
+                                                children: [
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.max,
+                                                    children: [
+                                                      SizedBox(
+                                                        height: screensize
+                                                                .height *
+                                                            0.13,
+                                                        width:
+                                                            screensize.width *
+                                                                0.26,
+                                                        child: ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      15),
+                                                          child: finaltemplelist[
+                                                                          index]
+                                                                      .imageurl ==
+                                                                  dummyData
+                                                              ? Image.asset(
+                                                                  'assets/images/ganesh_(5).png',
+                                                                  // height: screensize.height * 0.13,
+                                                                  fit: BoxFit
+                                                                      .fill,
+                                                                )
+                                                              : Image.memory(
                                                                   finaltemplelist[
                                                                           index]
-                                                                      .templedata['name'],
-                                                                  // maxLines: 2,
-                                                                  // overflow: TextOverflow.ellipsis,
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        color: Colors
-                                                                            .black,
-                                                                        fontFamily:
-                                                                            'Inter',
-                                                                        fontSize:
-                                                                            18.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w500,
-                                                                      ),
+                                                                      .imageurl,
+                                                                  fit: BoxFit
+                                                                      .fill,
                                                                 ),
-                                                              ),
-                                                              SizedBox(
-                                                                width: screensize
-                                                                        .width *
-                                                                    0.6,
-                                                                child: Text(
-                                                                  finaltemplelist[
-                                                                              index]
-                                                                          .templedata[
-                                                                      'vicinity'],
-                                                                  // overflow: TextOverflow.ellipsis,
-                                                                  style: FlutterFlowTheme.of(
-                                                                          context)
-                                                                      .bodyMedium
-                                                                      .override(
-                                                                        color: Colors
-                                                                            .black,
-                                                                        fontFamily:
-                                                                            'Inter',
-                                                                        fontSize:
-                                                                            12.0,
-                                                                        letterSpacing:
-                                                                            0.0,
-                                                                        fontWeight:
-                                                                            FontWeight.w300,
-                                                                      ),
-                                                                ),
-                                                              ),
-                                                              // templeList[index]
-                                                              //             ['website'] ==
-                                                              //         null
-                                                              //     ? Container()
-                                                              //     : const SizedBox(
-                                                              //         height: 5,
-                                                              //       ),
-                                                              // templeList[index]
-                                                              //             ['website'] ==
-                                                              //         null
-                                                              //     ? Container()
-                                                              //     : SizedBox(
-                                                              //         width:
-                                                              //             screensize.width *
-                                                              //                 0.6,
-                                                              //         child:
-                                                              //             GestureDetector(
-                                                              //           onTap: () {
-                                                              //             launchURL(
-                                                              //                 templeList[
-                                                              //                         index]
-                                                              //                     [
-                                                              //                     'website']);
-                                                              //           },
-                                                              //           child: Text(
-                                                              //             templeList[index]
-                                                              //                 ['website'],
-                                                              //             // overflow: TextOverflow.ellipsis,
-                                                              //             style: FlutterFlowTheme
-                                                              //                     .of(context)
-                                                              //                 .bodyMedium
-                                                              //                 .override(
-                                                              //                   color: Colors
-                                                              //                       .blue,
-                                                              //                   fontFamily:
-                                                              //                       'Inter',
-                                                              //                   fontSize:
-                                                              //                       12.0,
-                                                              //                   letterSpacing:
-                                                              //                       0.0,
-                                                              //                   fontWeight:
-                                                              //                       FontWeight
-                                                              //                           .w300,
-                                                              //                 ),
-                                                              //           ),
-                                                              //         ),
-                                                              //       ),
-                                                            ],
-                                                          ),
                                                         ),
-                                                      ],
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    MaterialButton(
-                                                      elevation: 0,
-                                                      onPressed: () {
-                                                        // lat = listresponse![index]['address']['geo']
-                                                        //         ['lat']
-                                                        //     ;
-                                                        // lng = listresponse![index]['address']['geo']
-                                                        //         ['lng']
-                                                        //     ;
-                                                        launchURL(
-                                                            "https://www.google.com/maps/search/${finaltemplelist[index].templedata['name']},${finaltemplelist[index].templedata['vicinity']}");
-                                                      },
-                                                      color:
-                                                          const Color.fromARGB(
-                                                              255, 255, 183, 2),
-                                                      shape:
-                                                          RoundedRectangleBorder(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          10)),
-                                                      child: const Padding(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                                vertical: 19),
-                                                        child: Row(
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsetsDirectional
+                                                                .fromSTEB(
+                                                                15.0,
+                                                                0.0,
+                                                                0.0,
+                                                                0.0),
+                                                        child: Column(
                                                           mainAxisAlignment:
                                                               MainAxisAlignment
-                                                                  .center,
-                                                          // ignore: prefer_const_literals_to_create_immutables
+                                                                  .spaceAround,
+                                                          mainAxisSize:
+                                                              MainAxisSize
+                                                                  .max,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Text('Directions',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w700)),
+                                                            SizedBox(
+                                                              width: screensize
+                                                                      .width *
+                                                                  0.622,
+                                                              child: Text(
+                                                                finaltemplelist[
+                                                                        index]
+                                                                    .templedata['name'],
+                                                                // maxLines: 2,
+                                                                // overflow: TextOverflow.ellipsis,
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      color: Colors
+                                                                          .black,
+                                                                      fontFamily:
+                                                                          'Inter',
+                                                                      fontSize:
+                                                                          18.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight.w500,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            SizedBox(
+                                                              width: screensize
+                                                                      .width *
+                                                                  0.6,
+                                                              child: Text(
+                                                                finaltemplelist[
+                                                                            index]
+                                                                        .templedata[
+                                                                    'vicinity'],
+                                                                // overflow: TextOverflow.ellipsis,
+                                                                style: FlutterFlowTheme.of(
+                                                                        context)
+                                                                    .bodyMedium
+                                                                    .override(
+                                                                      color: Colors
+                                                                          .black,
+                                                                      fontFamily:
+                                                                          'Inter',
+                                                                      fontSize:
+                                                                          12.0,
+                                                                      letterSpacing:
+                                                                          0.0,
+                                                                      fontWeight:
+                                                                          FontWeight.w300,
+                                                                    ),
+                                                              ),
+                                                            ),
+                                                            // templeList[index]
+                                                            //             ['website'] ==
+                                                            //         null
+                                                            //     ? Container()
+                                                            //     : const SizedBox(
+                                                            //         height: 5,
+                                                            //       ),
+                                                            // templeList[index]
+                                                            //             ['website'] ==
+                                                            //         null
+                                                            //     ? Container()
+                                                            //     : SizedBox(
+                                                            //         width:
+                                                            //             screensize.width *
+                                                            //                 0.6,
+                                                            //         child:
+                                                            //             GestureDetector(
+                                                            //           onTap: () {
+                                                            //             launchURL(
+                                                            //                 templeList[
+                                                            //                         index]
+                                                            //                     [
+                                                            //                     'website']);
+                                                            //           },
+                                                            //           child: Text(
+                                                            //             templeList[index]
+                                                            //                 ['website'],
+                                                            //             // overflow: TextOverflow.ellipsis,
+                                                            //             style: FlutterFlowTheme
+                                                            //                     .of(context)
+                                                            //                 .bodyMedium
+                                                            //                 .override(
+                                                            //                   color: Colors
+                                                            //                       .blue,
+                                                            //                   fontFamily:
+                                                            //                       'Inter',
+                                                            //                   fontSize:
+                                                            //                       12.0,
+                                                            //                   letterSpacing:
+                                                            //                       0.0,
+                                                            //                   fontWeight:
+                                                            //                       FontWeight
+                                                            //                           .w300,
+                                                            //                 ),
+                                                            //           ),
+                                                            //         ),
+                                                            //       ),
                                                           ],
                                                         ),
                                                       ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  MaterialButton(
+                                                    elevation: 0,
+                                                    onPressed: () {
+                                                      // lat = listresponse![index]['address']['geo']
+                                                      //         ['lat']
+                                                      //     ;
+                                                      // lng = listresponse![index]['address']['geo']
+                                                      //         ['lng']
+                                                      //     ;
+                                                      launchURL(
+                                                          "https://www.google.com/maps/search/${finaltemplelist[index].templedata['name']},${finaltemplelist[index].templedata['vicinity']}");
+                                                    },
+                                                    color:
+                                                        const Color.fromARGB(
+                                                            255, 255, 183, 2),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                    child: const Padding(
+                                                      padding: EdgeInsets
+                                                          .symmetric(
+                                                              vertical: 19),
+                                                      child: Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .center,
+                                                        // ignore: prefer_const_literals_to_create_immutables
+                                                        children: [
+                                                          Text('Directions',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontSize:
+                                                                      14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700)),
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ],
-                                                ),
+                                                  ),
+                                                ],
                                               ),
-                                              const Divider(
-                                                thickness: 2.0,
-                                                height: 20,
-                                                color: Color.fromARGB(
-                                                    146, 220, 220, 220),
-                                              ),
-                                            ],
-                                          )
-                                        : finaltemplelist.length >= 60 ||
-                                                tokenispresent == false
-                                            ? Container()
-                                            : Container(
-                                                color: Colors.white,
-                                                height: screensize.height * 0.2,
-                                                child: Center(
-                                                    child:
-                                                        CircularProgressIndicator()),
-                                              ),
-                              ),
+                                            ),
+                                            const Divider(
+                                              thickness: 2.0,
+                                              height: 20,
+                                              color: Color.fromARGB(
+                                                  146, 220, 220, 220),
+                                            ),
+                                          ],
+                                        )
+                                      : finaltemplelist.length >= 60 ||
+                                              tokenispresent == false
+                                          ? Container()
+                                          : Container(
+                                              color: Colors.white,
+                                              height: screensize.height * 0.2,
+                                              child: Center(
+                                                  child:
+                                                      CircularProgressIndicator()),
+                                            ),
                             ),
                           ),
-                  ],
-                ),
+                        ),
+                ],
               ),
             ),
           ),

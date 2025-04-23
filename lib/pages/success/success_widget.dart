@@ -37,7 +37,7 @@ class _SuccessWidgetState extends State<SuccessWidget> {
 
     super.dispose();
   }
-
+var request_received_message=Get.arguments;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -51,7 +51,7 @@ class _SuccessWidgetState extends State<SuccessWidget> {
           key: scaffoldKey,
           backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
           appBar: AppBar(
-            backgroundColor: const Color(0xFFFFF7EA),
+            backgroundColor: const Color(0xFFFEF2DA),
             automaticallyImplyLeading: false,
             leading: FlutterFlowIconButton(
               borderColor: Colors.transparent,
@@ -116,9 +116,9 @@ class _SuccessWidgetState extends State<SuccessWidget> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(50.0, 0.0, 50.0, 20.0),
+                    padding: const EdgeInsetsDirectional.fromSTEB(40.0, 0.0, 40.0, 20.0),
                     child: Text(
-                      'Order placed successfully.',
+                      request_received_message==null?"":request_received_message.toString(),
                       style: FlutterFlowTheme.of(context).bodyMedium.override(
                             fontFamily: 'Inter',
                             letterSpacing: 0.0,

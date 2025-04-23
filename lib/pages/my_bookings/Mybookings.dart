@@ -9,8 +9,10 @@ import 'package:intl/intl.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../alertdialog.dart';
 import '../../flutter_flow/flutter_flow_icon_button.dart';
@@ -38,6 +40,21 @@ class _mybookingsState extends State<mybookings> {
   List listresponse = [];
   List<bool> expandlist = [];
   List<bookedserviceList> bookingslist = List.empty(growable: true);
+  List sharelist = [];
+  void shareListToWhatsApp(List items) async {
+    
+    String listText = items.join("\n");
+    Share.share("Here is my list:\n\n$listText");
+    // String message = Uri.encodeComponent("Here is my list:\n\n$listText");
+    // String url = "https://wa.me/?text=$message";
+
+    // if (await canLaunch(url)) {
+    //   await launch(url);
+    // } else {
+    //   print("Could not open WhatsApp");
+    // }
+  }
+
   _apicall() async {
     setState(() {
       loader = true;
@@ -65,6 +82,13 @@ class _mybookingsState extends State<mybookings> {
         print('successful');
         mapresponse = json.decode(response1.body);
         listresponse = mapresponse['data'];
+        for (int m = 0; m < listresponse.length; m++) {
+          for (int n = 0;
+              n < listresponse[m]['bookingServiceResponse'].length;
+              n++) {
+            listresponse[m]['bookingServiceResponse'][n]['status'] = 1;
+          }
+        }
       });
       return listresponse;
     } else {
@@ -300,7 +324,7 @@ class _mybookingsState extends State<mybookings> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Color(0xFFFFF7EA),
+          backgroundColor: Color(0xFFFEF2DA),
           automaticallyImplyLeading: false,
           leading: FlutterFlowIconButton(
             borderColor: Colors.transparent,
@@ -346,7 +370,7 @@ class _mybookingsState extends State<mybookings> {
                   color: Color.fromARGB(255, 249, 249, 249),
                   borderRadius:
                       BorderRadius.vertical(top: Radius.circular(20))),
-              child: listresponse.isEmpty
+              child: listresponse.isEmpty && loader == false
                   ? SizedBox(
                       height: 200, child: Center(child: Text("No bookings")))
                   : ListView.builder(
@@ -386,16 +410,20 @@ class _mybookingsState extends State<mybookings> {
                                             children: [
                                               CircleAvatar(
                                                 radius: 35,
-                                                backgroundImage: NetworkImage(listresponse[
-                                                                        index][
-                                                                    'priestResponse']
-                                                                ['user']
-                                                            ['profileImage'] ==
-                                                        null
+                                                backgroundImage: NetworkImage(listresponse[index]
+                                                                        ['priestResponse']
+                                                                    ['user'][
+                                                                'profileImage'] ==
+                                                            null ||
+                                                        listresponse[index]
+                                                                        ['priestResponse']
+                                                                    ['user'][
+                                                                'profileImage'] ==
+                                                            "string"
                                                     ? "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
                                                     : listresponse[index]
-                                                            ['priestResponse'][
-                                                        'user']['profileImage']),
+                                                            ['priestResponse']
+                                                        ['user']['profileImage']),
                                               ),
                                               SizedBox(
                                                 width: screensize.width * 0.05,
@@ -673,9 +701,6 @@ class _mybookingsState extends State<mybookings> {
                                         Row(
                                           // ignore: prefer_const_literals_to_create_immutables
                                           children: [
-                                            SizedBox(
-                                              width: 10,
-                                            ),
                                             Container(
                                               child: Text(
                                                 "Booking Status",
@@ -698,15 +723,22 @@ class _mybookingsState extends State<mybookings> {
                                                 height: 25,
                                                 decoration: BoxDecoration(
                                                     borderRadius:
-                                                        BorderRadius.circular( 
+                                                        BorderRadius.circular(
                                                             100),
                                                     color: listresponse[index][
-                                                                'bookingStatus'] ==
-                                                            "Cancelled"
+                                                                    'bookingStatus'] ==
+                                                                "Cancelled" ||
+                                                            listresponse[index][
+                                                                    'bookingStatus'] ==
+                                                                "Rejected"
                                                         ? Color.fromARGB(
                                                             255, 215, 27, 27)
-                                                        : Color.fromARGB(
-                                                            39, 119, 119, 119)),
+                                                        : listresponse[index][
+                                                                    'bookingStatus'] ==
+                                                                "Accepted"
+                                                            ? Colors.green
+                                                            : Color.fromARGB(39,
+                                                                119, 119, 119)),
                                                 child: Center(
                                                     child: Padding(
                                                   padding:
@@ -718,28 +750,31 @@ class _mybookingsState extends State<mybookings> {
                                                   child: Text(
                                                     "${listresponse[index]['bookingStatus']}",
                                                     style: TextStyle(
-                                                        color: listresponse[
-                                                                        index][
-                                                                    'bookingStatus'] ==
+                                                        color: listresponse[index]['bookingStatus'] ==
                                                                 "Booked"
                                                             ? Color.fromARGB(
-                                                                255,
-                                                                35,
-                                                                214,
-                                                                104)
-                                                            : listresponse[index][
-                                                                        'bookingStatus'] ==
-                                                                    "Cancelled"
+                                                                255, 35, 214, 104)
+                                                            : listresponse[index]['bookingStatus'] ==
+                                                                        "Cancelled" ||
+                                                                    listresponse[index]['bookingStatus'] ==
+                                                                        "Rejected"
                                                                 ? Color.fromARGB(
                                                                     255,
                                                                     255,
                                                                     255,
                                                                     255)
-                                                                : Color.fromARGB(
-                                                                    255,
-                                                                    147,
-                                                                    147,
-                                                                    147),
+                                                                : listresponse[index]['bookingStatus'] ==
+                                                                        "Accepted"
+                                                                    ? Color.fromARGB(
+                                                                        255,
+                                                                        255,
+                                                                        255,
+                                                                        255)
+                                                                    : Color.fromARGB(
+                                                                        255,
+                                                                        147,
+                                                                        147,
+                                                                        147),
                                                         fontSize: 14,
                                                         fontWeight:
                                                             FontWeight.w500),
@@ -748,6 +783,22 @@ class _mybookingsState extends State<mybookings> {
                                               )
                                       ],
                                     ),
+                                    listresponse[index]['bookingStatus'] ==
+                                            "Initiated"
+                                        ? Column(
+                                            children: [
+                                              SizedBox(
+                                                height: 10,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Text(
+                                                      "You will receive further updates over email"),
+                                                ],
+                                              ),
+                                            ],
+                                          )
+                                        : Container(),
                                     SizedBox(
                                       height: 15,
                                     ),
@@ -899,6 +950,27 @@ class _mybookingsState extends State<mybookings> {
                                                                           'bookingServiceResponse'][n]
                                                                       [
                                                                       'status'] = 1;
+                                                                }
+                                                              }
+
+                                                              for (int m = 0;
+                                                                  m <
+                                                                      listresponse
+                                                                          .length;
+                                                                  m++) {
+                                                                for (int n = 0;
+                                                                    n <
+                                                                        listresponse[m]['bookingServiceResponse']
+                                                                            .length;
+                                                                    n++) {
+                                                                  if (m !=
+                                                                      index) {
+                                                                    listresponse[m]
+                                                                            [
+                                                                            'bookingServiceResponse'][n]
+                                                                        [
+                                                                        'status'] = 1;
+                                                                  }
                                                                 }
                                                               }
 
@@ -1147,6 +1219,72 @@ class _mybookingsState extends State<mybookings> {
                                                                 //   ),
                                                               ),
                                                             ),
+
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      top: 20),
+                                                              child: Container(
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              50),
+                                                                  color: const Color.fromARGB(255, 216, 216, 216),
+                                                                ),
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets
+                                                                          .only(
+                                                                          left:
+                                                                              10,
+                                                                          right:
+                                                                              10),
+                                                                  child:
+                                                                      TextButton
+                                                                          .icon(
+                                                                    onPressed:
+                                                                        () {
+                                                                      setState(
+                                                                          () {
+                                                                        sharelist =
+                                                                            [];
+                                                                      });
+
+                                                                      for (int n =
+                                                                              0;
+                                                                          n < value.groceriesList.length;
+                                                                          n++) {
+                                                                        sharelist
+                                                                            .add("${n + 1}. ${value.groceriesList[n]['grocery']['name']} Qty-${value.groceriesList[n]['grocery']['quantity'].toString() + " " + value.groceriesList[n]['grocery']['quantityType'].toString()}");
+                                                                      }
+                                                                      if (sharelist
+                                                                          .isNotEmpty) {
+                                                                        shareListToWhatsApp(
+                                                                            sharelist);
+                                                                        // Get.to(const PriestsWidget(), arguments: Selected_ServicesList);
+                                                                      }
+                                                                      sharelist =
+                                                                          [];
+                                                                    },
+                                                                    icon: Icon(
+                                                                      Icons
+                                                                          .share,
+                                                                      color: Colors
+                                                                          .black,
+                                                                    ),
+                                                                    label: Text(
+                                                                      "Share",
+                                                                      style: TextStyle(
+                                                                          color:
+                                                                              Colors.black),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            )
                                                             // SizedBox(
                                                             //   child: value
                                                             //           .groceriesList
