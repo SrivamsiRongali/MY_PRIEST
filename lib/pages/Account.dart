@@ -118,14 +118,14 @@ await DatabaseHelper.instance.updateusedata(UserData(
             ? ""
             : mapresponse!['motherTongue'];
         mobilenumber.text = mapresponse!['primaryMobile'] ?? "";
-        address1.text = mapresponse!['address'] == []
+        address1.text = mapresponse!['address'].isEmpty
             ? ""
             : mapresponse!['address'][0]['addressLine1'] == null
                 ? ""
                 : mapresponse!['address'][0]['addressLine1']== "string"
             ? ""
             : mapresponse!['address'][0]['addressLine1'];
-        address2.text = mapresponse!['address'] == []
+        address2.text = mapresponse!['address'].isEmpty
             ? ""
             : mapresponse!['address'][0]['addressLine2'] == null
                 ? ""
@@ -139,7 +139,7 @@ addressdata.addAll(mapresponse!['address'][0]['description'].toString().split('-
                   }
                   
                 }
-                print(mapresponse!['address'][0]['description']);
+                
         city.text = addressdata.isEmpty
             ? ""
             :  addressdata.length==1

@@ -155,6 +155,7 @@ class _cateringWidgetState extends State<cateringWidget> {
       locationavailable = false;
       finaltemplelist = [];
     });
+    _templesbasedonlocationapicall(17.4366645, 78.4525565);
     await Geolocator.openLocationSettings(); 
     return Future.error('Location services are disabled');
   }
@@ -170,6 +171,7 @@ class _cateringWidgetState extends State<cateringWidget> {
         locationavailable = false;
         finaltemplelist = [];
       });
+      _templesbasedonlocationapicall(17.4366645, 78.4525565);
       return Future.error('Location permissions are denied');
     }
   }
@@ -180,7 +182,7 @@ class _cateringWidgetState extends State<cateringWidget> {
       locationavailable = false;
       finaltemplelist = [];
     });
-
+_templesbasedonlocationapicall(17.4366645, 78.4525565);
     // Optionally open settings
     await Geolocator.openAppSettings();
 
@@ -575,55 +577,100 @@ class _cateringWidgetState extends State<cateringWidget> {
                       ),
                     ),
                   ),
+                 
+                  locationavailable?Container():
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                                15.0, 10.0, 15.0, 10.0),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: screensize.width*0.53,
+                          
+                          child: Text("For nearby results, provide",style: FlutterFlowTheme.of(context).titleSmall.override(
+                                  fontFamily: 'Inter Tight',
+                                  color: Color(0xFFD66223),
+                                  letterSpacing: 0.0,
+                                ),
+                                softWrap: true,
+                                
+                                ),
+                        ),
+                                                
+                              
+                              MaterialButton(onPressed: (){
+                                currentPosition();
+                              },
+                              
+                              elevation: 0,
+                              color:  Color(0xFFD66223),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                              child:
+                              
+                               Text("Location access",style:  FlutterFlowTheme.of(
+                                                                         context)
+                                                                     .titleSmall
+                                                                     .override(
+                                                                       fontFamily:
+                                                                           'Inter Tight',
+                                                                       color: Colors.white,
+                                                                       letterSpacing:
+                                                                           0.0,
+                                                                     ),),),
+                      ],
+                    ),
+                  ),
                   finaltemplelist.isEmpty
                       ? loader
                           ? Container()
                           :
-                            locationavailable?     SizedBox(
+                                SizedBox(
                               height: 200,
                               width: double.infinity,
                               child: const Center(
                                   child: Text(
                                       "No Caterers are available near you")),
-                            ):SizedBox(
-                              height: 300,
-                              width: double.infinity,
-                              child: Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                          "Location Needed to Show Nearby Caterers",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: const Text(
-                                            "We couldn’t access your current location. Please enable location access in your device settings so we can show you the nearest Caterers.",
-                                            textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                          
-                              MaterialButton(
-                              
-                                onPressed: () {
-                                  currentPosition();
-                                },
-                                color: Color.fromARGB(255, 214, 98, 35),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5)),
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.all(10),
-                                  child: Text('Provide Location Access',
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600)),
-                                ),
-                              ),
-                                         
-                                    ],
-                                  )),
                             )
+                            // :SizedBox(
+                            //   height: 300,
+                            //   width: double.infinity,
+                            //   child: Center(
+                            //       child: Column(
+                            //         mainAxisAlignment: MainAxisAlignment.center,
+                            //         children: [
+                            //           const Text(
+                            //               "Location Needed to Show Nearby Caterers",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w500),),
+                            //               Padding(
+                            //                 padding: const EdgeInsets.all(8.0),
+                            //                 child: const Text(
+                            //                 "We couldn’t access your current location. Please enable location access in your device settings so we can show you the nearest Caterers.",
+                            //                 textAlign: TextAlign.center,
+                            //                 ),
+                            //               ),
+                                          
+                            //   MaterialButton(
+                              
+                            //     onPressed: () {
+                            //       currentPosition();
+                            //     },
+                            //     color: Color.fromARGB(255, 214, 98, 35),
+                            //     shape: RoundedRectangleBorder(
+                            //         borderRadius: BorderRadius.circular(5)),
+                            //     child: Padding(
+                            //       padding:
+                            //           const EdgeInsets.all(10),
+                            //       child: Text('Provide Location Access',
+                            //           style: TextStyle(
+                            //               color: Colors.white,
+                            //               fontSize: 16,
+                            //               fontWeight: FontWeight.w600)),
+                            //     ),
+                            //   ),
+                                         
+                            //         ],
+                            //       )),
+                            // )
                       : Container(
                           // color: Colors.blue,
                           height: screensize.height * 0.81,
