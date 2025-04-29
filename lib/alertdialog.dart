@@ -192,8 +192,8 @@ class popupwithcustombuttons extends StatelessWidget {
    popupwithcustombuttons({super.key, required this.onPressedforbutton1,required this.onPressedforbutton2,required this.content,required this.title,required this.button1label,required this.button2label});
 VoidCallback onPressedforbutton1;
 VoidCallback onPressedforbutton2;
-String button1label;
-String button2label;
+Widget button1label;
+Widget button2label;
 Widget content;
 Widget title;
   @override
@@ -211,27 +211,14 @@ Widget title;
                           children: [
                             TextButton(
                               onPressed: onPressedforbutton1,
-                              child: Text(
+                              child: 
                                 button1label,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  fontSize: 15.0,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              
                             ),
                             TextButton(
                               onPressed: onPressedforbutton2,
-                              child: Text(
-                              button2label,
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  color: FlutterFlowTheme.of(context).primary,
-                                  fontSize: 15.0,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                              child:
+                              button2label
                             ),
                           ],
                         ),

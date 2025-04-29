@@ -338,7 +338,20 @@ class _myaccountState extends State<myaccount> {
                               color: Colors.white),
                         ),
                         IconButton(
-                            onPressed: () async {},
+                            onPressed: () async {
+                               final SharedPreferences sharedPreferences =
+                      await SharedPreferences.getInstance();
+                  sharedPreferences.remove("flow");
+                  sharedPreferences.remove("name");
+                  sharedPreferences.remove("token");
+                  sharedPreferences.remove("userid");
+                  sharedPreferences.remove("email");
+                  sharedPreferences.remove("mobilenumber");
+                  await DatabaseHelper.instance.removeuserdata();
+                  await DatabaseHelper.instance.removefilterdata();
+
+                  Get.offAll(signin());
+                            },
                             icon: Icon(
                               Icons.arrow_forward_ios,
                               color: Colors.white,

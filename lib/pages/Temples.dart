@@ -568,8 +568,8 @@ class _TemplesWidgetState extends State<TemplesWidget> {
                           ),
                         ),
                         title: Text("Filter"),
-                        button1label: 'Clear',
-                        button2label: 'Apply',
+                        button1label: Text("Clear"),
+                        button2label: Text('Apply'),
                       );
                     });
               },

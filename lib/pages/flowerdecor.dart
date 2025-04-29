@@ -502,8 +502,8 @@ _templesbasedonlocationapicall(17.4366645, 78.4525565);
                           ),
                         ),
                         title: Text("Filter"),
-                        button1label: 'Clear',
-                        button2label: 'Apply',
+                        button1label: Text("Clear"),
+                        button2label: Text('Apply'),
                       );
                     });
               },

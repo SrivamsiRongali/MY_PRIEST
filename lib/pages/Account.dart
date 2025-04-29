@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
+import 'package:my_priest/alertdialog.dart';
 import 'package:my_priest/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -19,6 +20,8 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
+import 'login_signup/signin.dart';
 
 class priestList {
   priestList({required this.Priestobject, required this.selected});
@@ -231,6 +234,49 @@ _apicall();
       print(response1.body);
     }
   }
+
+
+   Future _deleteapicall() async {
+     setState(() {
+        loader=true;
+      });
+     
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    var token = sharedPreferences.getString("token");
+    var userid = sharedPreferences.getInt("userid");
+    http.Response response1;
+    response1 = await http.get(
+      Uri.parse(
+          "https://${AppConstants.ipaddress.ipaddress}/api/users/$userid?status=1"),
+      headers: {
+        "accept": "*/*",
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token"
+      },
+    );
+    if (response1.statusCode == 200) {
+       final SharedPreferences sharedPreferences =
+                      await SharedPreferences.getInstance();
+                  sharedPreferences.remove("flow");
+                  sharedPreferences.remove("name");
+                  sharedPreferences.remove("token");
+                  sharedPreferences.remove("userid");
+                  sharedPreferences.remove("email");
+                  sharedPreferences.remove("mobilenumber");
+                  await DatabaseHelper.instance.removeuserdata();
+                  await DatabaseHelper.instance.removefilterdata();
+
+                  Get.offAll(signin());
+    } else {
+       setState(() {
+        loader=false;
+      });
+      Get.back();
+      print('fetch unsuccessful');
+      print(response1.body);
+    }
+  }
   bool loader=false;
 GlobalKey<FormState> formkey = GlobalKey<FormState>();
   @override
@@ -326,7 +372,7 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
               height: remainingHeight,
               child: SingleChildScrollView(
                   child: Padding(
-                padding: const EdgeInsets.only(top: 12,left: 12,right: 12,bottom: 80),
+                padding: const EdgeInsets.only(top: 12,left: 12,right: 12,bottom: 100),
                 child: Column(
                   children: [
                     Column(
@@ -870,9 +916,59 @@ GlobalKey<FormState> formkey = GlobalKey<FormState>();
                         ),
                       ],
                     ),
+                    SizedBox(height: 10,),
+                   Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          
+                          width: screensize.width*0.63,
+                          
+                          child: Text("Account Deletion",style: FlutterFlowTheme.of(context).titleSmall.override(
+                                  fontFamily: 'Inter Tight',
+                                  color: Color(0xFFD66223),
+                                  letterSpacing: 0.0,
+                                ),
+                                softWrap: true,
+                                
+                                ),
+                        ),
+                                                
+                              
+                              MaterialButton(onPressed: (){
+                               showDialog( context: context,
+                          builder: (BuildContext context){
+                        return popupwithcustombuttons(
+                          onPressedforbutton1: (){Get.back();}, 
+                          onPressedforbutton2: (){_deleteapicall();}, 
+                        content: Text("This will permanently remove your data and cannot be undone",textAlign: TextAlign.center,), 
+                        title: Text("Are you sure you want to delete your account?",textAlign: TextAlign.center), 
+                        button1label: Text("Cancel",), 
+                        button2label: Text("Delete",style: TextStyle(color: Colors.red),));
+                          });
+                              },
+                              
+                              elevation: 0,
+                              color:  Color.fromARGB(255, 103, 103, 103),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50),side:BorderSide(width: 2,color: Color(0xFFD66223))),
+                              child:
+                              
+                               Text("Request",style:  FlutterFlowTheme.of(
+                                                                         context)
+                                                                     .titleSmall
+                                                                     .override(
+                                                                       fontFamily:
+                                                                           'Inter Tight',
+                                                                       color: Colors.white,
+                                                                       letterSpacing:
+                                                                           0.0,
+                                                                     ),),),
+                      ],
+                    ),
                   ],
                 ),
-              )),
+              )
+              ),
             ),
           ),
         ),

@@ -1,5 +1,6 @@
 // ignore_for_file: camel_case_types, prefer_const_constructors
 import 'dart:convert';
+import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:modal_progress_hud_nsn/modal_progress_hud_nsn.dart';
 
 import '../../flutter_flow/flutter_flow_theme.dart';
+import '../../flutter_flow/flutter_flow_util.dart';
 import '../../shared.dart';
 import 'signin.dart';
 
@@ -77,9 +79,9 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
             child: SingleChildScrollView(
               child: Stack(
                 children: [
-                   Image.asset("assets/images/Login_background.png",fit: BoxFit.fill,width: screenwidth,height: screenheight-statusBarHeight,),
+                   Image.asset("assets/images/Login_background.png",fit: BoxFit.fill,width: screenwidth,height: screenheight,),
                   Padding(
-                    padding: EdgeInsets.fromLTRB(20, 50, 20, 0),
+                    padding: EdgeInsets.fromLTRB(20, 50, 20, 20),
                     child: Form(
                       key: formkey,
                       child: Column(
@@ -503,9 +505,59 @@ double statusBarHeight = MediaQuery.of(context).padding.top;
                               ),
                             ),
                           ),
-                          // SizedBox(
-                          //   height: screenheight * 0.05,
-                          // ),
+                          
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                 Container(
+                                  width: screenwidth*0.89,
+                                   child: Center(
+                                     child: RichText(
+                                      textAlign: TextAlign.center,
+                                      softWrap: true,
+                                            text: TextSpan(
+                                              children: [
+                                               TextSpan( text:"By signing up, you agree to our ",style: FlutterFlowTheme.of(context).titleSmall.override(
+                                        fontFamily: 'Inter Tight',
+                                        color: Colors.black,
+                                        letterSpacing: 0.0,
+                                        fontSize: 14
+                                      ),),
+                                               TextSpan(text:"privacy policy",style: FlutterFlowTheme.of(context).titleSmall.override(
+                                        fontFamily: 'Inter Tight',
+                                        decoration: TextDecoration.underline,
+                                        color: Color(0xFFD66223),
+                                        letterSpacing: 0.0,
+                                        fontSize: 14
+                                      ),
+                                      recognizer: TapGestureRecognizer()
+                                                                ..onTap = () {
+                                                                  launchURL(
+                                                                      "https://www.indianpriestservices.com/privacy-policy/");
+                                                                  // Handle click action here
+                                                                  print(
+                                                                      'Button clicked');
+                                                                },
+                                                                  
+                                      ),
+                                              ],
+                                              style: FlutterFlowTheme.of(context)
+                                                  .bodyLarge
+                                                  .override(
+                                                    fontFamily: 'Plus Jakarta Sans',
+                                                    color: Color(0xFF15161E),
+                                                    fontSize: 16.0,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  
+                                            ),
+                                          ),
+                                   ),
+                                 ),
+                               ],),
+                          )
                           // Row(
                           //   mainAxisAlignment: MainAxisAlignment.center,
                           //   children: [
